@@ -66,7 +66,7 @@
 \end{tabular}
 \\
 \begin{tabular}{ccc}
-{Ian Foster\textsuperscript{+}} & {Michael J.Franklin\textsuperscript{*}} & {Ion Stoica\textsuperscript{*}}
+{Ian Foster\textsuperscript{+}} & {Michael J. Franklin\textsuperscript{*}} & {Ion Stoica\textsuperscript{*}}
 %Name Institution
 \end{tabular}
 \and % use '\and' if you need 'another row' of author names
@@ -80,24 +80,21 @@
 
 % Use the following at camera-ready time to suppress page numbers.
 % Comment it out when you first submit the paper for review.
-\thispagestyle{empty}
+%\thispagestyle{empty}
 
 
-\subsection*{Abstract}
-Resilience is critical for applications running
-on distributed computing platforms in which node failures may occur frequently.
-When replaying a failed task, we may rely on online backups either of a task's input
-data or of lineage metadata describing how that data were computed.
-However, applying either technique blindly can be inefficient due to either
-excessive recovery costs if only lineage is recorded or excessive data replication costs if all data is replicated.
-We present an adaptive backup approach that uses models of backup and
+\begin{abstract}
+Resilience is critical for applications running on computing platforms with frequent node failures.
+Existing systems overcome node failure by resilience data access either through task re-execution or additional replicas.
+However, applying either technique blindly can be inefficient due to 
+excessive recovery or data replication costs.
+We present an adaptive approach that balances backup and
 recovery costs to guide decisions regarding backup methods, with the goal of identifying
-at run time the choices that work best for a given computer system and application.
-We implement this adaptive backup approach inside the AMFORA parallel scripting framework
-and evaluate its effectiveness with a scientific image processing application, Montage.
-When running this application on 64 compute nodes, we find that the adaptive approach
-recovers with better performance (up to 57\% better) than
-do pure re-execution or replication approaches, while introducing only 2.9\% overhead in failure-free performance.
+at run time the best choices for a given computer system and application.
+We implement this adaptive approach inside the AMFORA parallel scripting framework
+and evaluate its effectiveness with a mage processing application, Montage.
+We find that the adaptive approach recovers up to 57\% faster than
+do pure re-execution or replication, while introducing only 2.9\% overhead in failure-free performance on 64 compute nodes.
 We also discover that, at least for this application, backup decisions are relatively insensitive to node failure rate.
 %We implement the adaptive backup model inside two distributed computing framework: AMFORA and
 %GraphX to enable efficient execution of parallel scripting applications and graph processing applications respectively.
@@ -105,6 +102,7 @@ We also discover that, at least for this application, backup decisions are relat
 %high system resilience while considering aspects such as cost and performance. Using two real world applications
 %our results show that dynamic backup improves upon purely replication or lineage under failure 
 %and exhibits an acceptable overhead without failure. 
+\end{abstract}
 
 \section{Introduction}
 %\{test}
