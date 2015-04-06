@@ -360,7 +360,6 @@ E_{repl}(y) \approx \frac{|y|}{B}+\frac{P}{1-P}timeout
 Equation~\ref{EQ:spatial} defines the replication recovery cost for an output file $y$ to be approximately 
 equal to the time required to move the file plus the time required to switch to the replica
 in the case of failure, where the likelihood of needing to use the replica is based on the rate of failure $P$
-\iannote{Should be $P$, yes?}\zhaonote{yes, indeed, fixed}. 
 Thus, when there is no failure, the cost of replication is simply the cost of creating the replicas\iannote{A couple of points: a) you have switched back from talking about ``backups" to ``replica" (which I think is clearer); b) the language here assumes that there is a single replica. But elsewhere you talk about multiple replicas.} \zhaonote{I explained the ``backup'' term in email, and the multiple replicas issue is fixed} in the first place. 
 
 
@@ -399,9 +398,6 @@ To simplify our discussion, we assume a task writes its output files first to lo
 {\bf T}: task execution time, including computation and I/O cost,
 {\bf U}: time to backup the output file,
 and {\bf E}: expected cost to recover the output file.
-\iannote{This surprised me. I would have expected to see the time for a task
-as being the time required to recover its input files, plus $T$ and $U$.}
-\zhaonote{Yes, $T$ is included in E}
 
 To take both the backup cost and expected recovery cost into account, we use a linear combination of {\bf U} and {\bf E} as the indicator score\iannote{A phrase that is unfamiliar to me.} $S$, shown in Equation~\ref{EQ:combined}:
 \begin{equation}
@@ -410,7 +406,7 @@ S=\alpha*U+(1-\alpha)*E
 \end{equation}
 %
 For every output file, we evaluate the indicator score with both lineage or replication as the backup choice, and use the technique with the lower total cost.
-The term $\alpha$ in Equation~\ref{EQ:combined} is an optimization weight \iannote{Unclear} in backup cost, which the users can set to between 0 and 1. \katznote{after this, do we ever use $S$ again?  If not, do we need to define it?}
+The term $\alpha$ in Equation~\ref{EQ:combined} is an optimization weight \iannote{Unclear} in backup cost, which the users can set to between 0 and 1. 
 
 \subsubsection{Discussion}
 We next discuss how task and system parameters impact the choice of backup approach.
@@ -700,11 +696,11 @@ While these approaches to fault tolerance have been successfully applied in a nu
 \label{sec:Con}
 We have proposed a new approach to fault-tolerant distributed computation suitable for the increasingly important class of parallel applications composed of small tasks linked by data flows.
 The core of our approach is a mathematical model of backup and recovery costs, which we leverage to make runtime decisions about how and when to replicate data and metadata. This model, which permits online comparison of the cost of replicating data via either re-execution or access to replicas, takes as input only input file size, output file size, number of replicas, task time-to-solution, network bandwidth, and failure rate.
-We described an integration of the model with a parallel scripting framework and presented performance results for an astronomy image processing application, Montage.
-These results show that our adaptive scheme can recover from failure more efficiently in the case of failure that other methods, while introducing only 2.9\% overhead when there are no failures. We also investigated the sensitivity of our models to failure rate, a notoriously inaccurate parameter. We find that for our target application (and, we expect, for many other similar applications), backup decisions are relatively insensitive to failure rate in practice.
+We applied the model with a parallel scripting framework and presented performance results for an astronomy image processing application, Montage.
+These results show that our adaptive scheme can recover from failure more efficiently in the case of failure that other methods, while introducing only 2.9\% overhead when there are no failures. We also investigated the sensitivity of our model to failure rate, a notoriously inaccurate parameter. We find that for our target application (and, we expect, for many other similar applications), backup decisions are relatively insensitive to failure rate in practice.
 
 Our configurable model permits users to express their preferences regarding the relative weight to be given to re-execution vs.\ access to cached data as a recovery strategy,
-and thus the time spent on data replication vs.\ metadata storage. Such preferences may be used to express, for example, the user's belief's regarding failure rates, their interest
+and thus the time spent on data replication vs.\ metadata storage. Such preferences may be used to express, for example, the user's expected failure rates, their interest
 in rapid failure-free execution, and/or their interest in limiting storage consumption for backups.
 
 In future work, we plan to integrate this adaptive backup model with the Berkeley Data Analytics Stack, particularly with
