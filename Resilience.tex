@@ -278,7 +278,7 @@ of runtime state mutations.
 
 Our resiliency approach builds on an analytical model that relates the costs of backup and recovery to system parameters
 such as communication cost and failure rate.
-We next explains this model in detail and present the algorithm that we use to make dynamic replication decisions. 
+Here we explain this model in detail and present the algorithm that we use to make dynamic replication decisions. 
 
 In general, we view a task as a function $t$ that takes $n$ input files and produces $m$ output files:
 \begin{equation}
@@ -311,19 +311,19 @@ Term & Meaning \\ \hline
 
 
 \subsection{Backup Cost}
-The time required to synchronously create $r-1$ replicas of a file $y$ to memory is as follows:
+A file can be recovered either by retrieving a replica or through reexecution based on its lineage metadata.  To create r replicas of a file or its lineage, r-1 additional copies are needed.  The time required to synchronously create the $r-1$ replicas of a file $y$ to memory is as follows:
 
 \begin{equation}
 U_{repl}(y) = \frac{|y|}{B} (r-1)
 \end{equation}
 
-Similarly, the time required to record $r-1$ times the lineage of a file $y$ is as follows.
+Similarly, the time required to record the lineage of a file $y$ $r-1$ times is as follows.
 \begin{equation}
 U_{line}(y) = \frac{|M_{y}|}{B} (r-1)
 \end{equation}
 
 \subsection{Expected Recovery Cost}
-A file can be recovered either through reexecution based on its lineage metadata or by retrieving a replica.
+
 We can now estimate the expected recovery time, given the assumptions above.
 %Given an unreliable environment in which compute nodes fail with rate $P$, 
 %a network with uniform bandwidth $B$, we can estimate the expected recovery time.
@@ -360,13 +360,12 @@ E_{repl}(y) \approx \frac{|y|}{B}+\frac{P}{1-P}timeout
 Equation~\ref{EQ:spatial} defines the replication recovery cost for an output file $y$ to be approximately 
 equal to the time required to move the file plus the time required to switch to the replica
 in the case of failure, where the likelihood of needing to use the replica is based on the rate of failure $P$
-Thus, when there is no failure, the cost of replication is simply the cost of creating the replicas\iannote{A couple of points: a) you have switched back from talking about ``backups" to ``replica" (which I think is clearer); b) the language here assumes that there is a single replica. But elsewhere you talk about multiple replicas.} \zhaonote{I explained the ``backup'' term in email, and the multiple replicas issue is fixed} in the first place. 
-
+Thus, when there is no failure, the cost of replication is simply the cost of creating the replicas
 
 \subsubsection{Expected Lineage Recovery Cost}
-A task $t_i$ has $n$ input data. Assume that those input data are located on $n$ other nodes.
+A task $t_i$ has $n$ input files. Assume that those input files are located on $n$ other nodes.
 If all of these nodes are available, the expected recovery time through lineage (i.e., re-execution) is
-$(1-P)^nT$. If there are one, two, or more failed nodes, the expected recovery time through lineage is:
+$(1-P)^nT$. \katznote{if all of the nodes are available, where does P come in?}  If there are one, two, or more failed nodes, the expected recovery time through lineage is:
 
 \noindent ~~~~ One failure:
 %
@@ -399,30 +398,30 @@ To simplify our discussion, we assume a task writes its output files first to lo
 {\bf U}: time to backup the output file,
 and {\bf E}: expected cost to recover the output file.
 
-To take both the backup cost and expected recovery cost into account, we use a linear combination of {\bf U} and {\bf E} as the indicator score\iannote{A phrase that is unfamiliar to me.} $S$, shown in Equation~\ref{EQ:combined}:
+To take both the backup cost and expected recovery cost into account, we use a linear combination of {\bf U} and {\bf E}, which we call % as the indicator score\iannote{A phrase that is unfamiliar to me.} 
+$S$, shown in Equation~\ref{EQ:combined}:
 \begin{equation}
 S=\alpha*U+(1-\alpha)*E
 \label{EQ:combined}
 \end{equation}
 %
-For every output file, we evaluate the indicator score with both lineage or replication as the backup choice, and use the technique with the lower total cost.
-The term $\alpha$ in Equation~\ref{EQ:combined} is an optimization weight \iannote{Unclear} in backup cost, which the users can set to between 0 and 1. 
+For every output file, we evaluate the score with both lineage or replication as the backup choice, and use the technique with the lower total cost.
+The term $\alpha$ in Equation~\ref{EQ:combined} is a weight, which the user can set to between 0 and 1. 
+ If the user's optimization goal is backup cost, users can specify $\alpha$ close to 1
+That means that execution will optimize the backup cost over recovery cost. In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. The system make backup decisions to optimize the expected recovery cost since the chance for a failure to occur is high. Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
 We next discuss how task and system parameters impact the choice of backup approach.
 The four example tasks in Figure~\ref{fig:taxonomy} vary in their computation time, I/O size, and number of input files. If we control the comparison by varying only one factor, we see some trends about backup decisions.
 An output file produced by a longer-running task will tend to be backed up by replication because the cost of regenerating the file by re-executing the task will be large.
-\iannote{It is unclear from the text whether the following are qualitative statements based on your intuition, or based on simulations.}
-\iannote{Do you not assume that there is just one output file per task?} 
-\iannote{I realize now something that is bothering me. You seem to alternate between a perspective based on files and a perspective based on tasks. I think the text will be clearer if you choose one. Let's say it is files. Then this sentence would be ``An output file produced by a longer-running task will tend to be backed up by replication." This sentence (and the other sentences in this section) would be clearer if we added some explanatory words, such as ``because the cost of regenerating the file by re-executing the task will be large."}\zhaonote{I see, fixed}
+%\iannote{It is unclear from the text whether the following are qualitative statements based on your intuition, or based on simulations.}
+%\iannote{Do you not assume that there is just one output file per task?} 
+%\iannote{I realize now something that is bothering me. You seem to alternate between a perspective based on files and a perspective based on tasks. I think the text will be clearer if you choose one. Let's say it is files. Then this sentence would be ``An output file produced by a longer-running task will tend to be backed up by replication." This sentence (and the other sentences in this section) would be clearer if we added some explanatory words, such as ``because the cost of regenerating the file by re-executing the task will be large."}\zhaonote{I see, fixed}
 A larger output file is more likely to be backed up through lineage, since replicating this file takes a long time.
 A file that depends on more input files has a higher probability to be backed up through replication, as it takes a long time to read many input files during reproduction of this particular file.
 
-We can also make observations about the implications of system parameters for the choice of backup approach.
-Higher bandwidth improves replication performance more significantly than lineage; thus, other things being equal, the same file is more likely to be backed up through replication on a higher-bandwidth system. If the user's optimization goal is backup cost, users can specify $\alpha$ close to 1
-\iannote{I am confused. Above you talk about ``lineage or replication as the backup choice"--implying that they are two backup options. Here you seem to equate backup with replication?}. 
-\zhaonote{Given S=a*U+(1-a)*E as a weighted sum of backup cost and recovery cost, the user might want to optimize towards backup cost, aka ``failure-free running time''. Users can also optimize towards recovery cost, which is the performance with a failure presence.}
-That means that execution will optimize the backup cost over recovery cost. In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. The system make backup decisions to optimize the expected recovery cost since the chance for a failure to occur is high\iannote{Huh?}. Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
+We also observe the implication of system bandwidth for the choice of backup approach.
+Higher bandwidth improves replication performance more significantly than lineage; thus, other things being equal, the same file is more likely to be backed up through replication on a higher-bandwidth system.
 
 \begin{figure}[ht]
 	\begin{center}
