@@ -434,7 +434,7 @@ Higher bandwidth improves replication performance more significantly than lineag
 
 \section{Implementation}
 \label{sec:Impl}
-To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. It also needs to identify what parameters in the command line are input files and which are output files.
+To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. It also needs to \katznote{it needs to, or it does?} identify what parameters in the command line are input files and which are output files.
 
 \begin{figure}[ht]
 	\begin{center}
@@ -451,19 +451,19 @@ File replicas are placed on nodes directly adjacent to the file hosting node in 
 Similarly, metadata are copied to nodes adjacent to the metadata hosting node.
 Figure~\ref{fig:datalayout} shows an example data layout in which three copies each have been
 created for both the data ({\tt data[f]}) and metadata ({\tt meta[f]}) of a file {\tt f}.
-To access file data or metadata, a client applies the consistent hash function, with the file path and node list as input, to determine the node that hosts the file data or metadata; if that access fails, it can switch to the next copy until the required item is returned. (It can infer locations of copies beyond the first based on global topology information.
+To access file data or metadata, a client applies a consistent hash function, with the file path and node list as input, to determine the node that hosts the file data or metadata. If access to that node fails, it can switch to the next copy until the required item is returned. (The client can infer locations of copies beyond the first based on global topology information.
 
 Recovery of a file for which no copy exists requires access to the file's lineage metadata.
 This metadata is retrieved and the computation that it describes is examined, to
-determine whether {\em its} input file(s) are present. If they are not, the process is repeated.
+determine whether the input file(s) needed to create that file are present. If they are not, the process is repeated.
 The resulting directed acyclic graph of tasks is then executed.
 
 Our implementation is also responsible for synthesizing lineage metadata and for
 maintaining the database of file sizes and task execution times that is
 used to guide backup decisions. To this end, the execution engine tracks modifications to each
-local metadata and data cache in order to gather task execution times and file usage patterns.
+local metadata and data cache \katznote{each local metadata and data cache? what does this mean} in order to gather task execution times and file usage patterns.
 This information allows each compute node to make individual backup decisions for each new
-files that is generated.
+file that is generated.
 
 
 
