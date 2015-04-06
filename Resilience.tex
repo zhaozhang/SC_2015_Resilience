@@ -127,7 +127,7 @@ Meanwhile, all other tasks can continue running as they are not affected by the 
 
 The two backup and recovery approaches just described have been employed in various systems. For example,
 the Spark~\cite{RDD2012} and BAD-FS~\cite{badfs2004} systems rerun tasks following node failure,
-while RAID~\cite{raid1988} and the Hadoop Distributed File System (HDFS)~\cite{HDFS} replicate each file (at the block level) a configurable number of times to preserve data access following node failure.
+while RAID 1~\cite{raid1988} and the Hadoop Distributed File System (HDFS)~\cite{HDFS} replicate each file (at the block level) a configurable number of times to preserve data access following node failure.
 However, irregular execution times, data sizes, and data dependencies can cause problems for each approach. Universal application of the lineage technique can result in excessive recovery costs, since a failure can 
 require restarting deep in the lineage graph.
 On the other hand, ubiquitous application of replication may result in excessive overheads when failures are rare, due to data copying and storage costs.
@@ -174,7 +174,7 @@ Table~\ref{tb:Montage} explains the application stage by stage.
     \hline
     Stage & Description  \\ \hline \hline
     mProject &  reads image files and writes reprojected images\\ \hline
-    mImgtbl &  takes the one line output from mProject, and concats them into one file\\ \hline
+    mImgtbl &  takes the one line from mProject output, and concats them into one file\\ \hline
     mOverlaps &  analyzes the image table, produces a metadata table describing which images overlap along with a task list of {\tt mDiffFit} tasks (one for each pair of overlapping images) \\ \hline
     mDiffFit &  inputs two overlapping output files from {\tt mProject}, fits a plane to the overlap region \\ \hline
     mConcatFit &  gathers all output data from the previous stage (coefficients of the planes), and summarizes them into one file \\ \hline
@@ -202,8 +202,8 @@ Table~\ref{tb:Montage} explains the application stage by stage.
 AMFORA is a POSIX-compatible parallel scripting framework that allows users to run (unmodified script-based) 
 programs in parallel with data stored in the distributed RAM-based AMFORA File System.  
 AMFORA provides a simple programming interface to its task and data management capabilities.
-In essence, the programmer specifies many task computations in terms of operations performed on files and directories,
-which operations on directories serving to specify collective transformations on many files.
+In essence, the programmer specifies many task computations in terms of operations performed on files,
+with operations on directories serving to specify collective transformations on many files.
 
 \subsection{AMFORA Programming Model}
 We shown in Listing~\ref{lst:Montage} the AMFORA script code for the first two stages of the Montage application.
@@ -211,13 +211,14 @@ We shown in Listing~\ref{lst:Montage} the AMFORA script code for the first two s
 #!/bin/bash
 
 #mProjectPP
-#for each file in rawdir/ we run a mProject 
-#task with it as input file and produces an 
-#output file stored in tempdir/
+#for each file in rawdir/ we run a 
+#mProject  task with it as input file 
+#and produces an  output file 
+#stored in tempdir/
 
-#Queue is the API to push a task into queue
-#Execute is the API to run the queued tasks 
-#in parallel
+#Queue is the API to push a task into 
+#queue, Execute is the API to run the  
+#queued tasks in parallel
 
 mkdir tempdir/
 for file in `ls rawdir/`
@@ -237,8 +238,8 @@ done
 mImgtbl tempdir/ images.tbl 	    
 \end{lstlisting}
 
-Lines 12--18 enqueue tasks; upon calling Line 18, all queued tasks are dispatched
-to available compute nodes for execution. Line 26 is a simple example of AMFORA collective data movement:
+Lines 13--19 enqueue tasks; upon calling Line 19, all queued tasks are dispatched
+to available compute nodes for execution. Line 27 is a simple example of AMFORA collective data movement:
 it moves all files in the {\tt tempdir/} directory from multiple nodes to a single node using a minimum-spanning tree algorithm.
 AMFORA supports multicast, gather, scatter, allgather, and shuffle (alltoall) data flows.
 
@@ -578,7 +579,7 @@ Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our t
 Montage stages.
 We see that the adaptive and replication schemes perform similarly in stages mImgtbl-1 and mDiffFit,
 as the output files of these two stages are backed up via replication; both also do better than
-The mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
+the mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
 as all of its tasks benefit from the previously replicated mProject output files and all of its output files are backed up through lineage as shown in Figure~\ref{fig:montage-space}.
 
 \begin{figure}[ht]
@@ -654,7 +655,6 @@ Surprisingly, the adaptive backup decisions remain the same under all five failu
 The reason for this lack of sensitivity to $P$ becomes clear when we look at Equations~\ref{EQ:spatial} and \ref{EQ:temporal}.
 We see that unless $P$ is quite large, data and metadata copy costs dominate.
 
-Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations, which implies the failure rate is irrelevant to the adaptive backup decision making. Looking back into the expected recovery cost equations (Equations~\ref{EQ:spatial} and \ref{EQ:temporal}), though items leading by P preserves the mathematical accuracy, these items can be negligible in practice assuming P is really small in practice.
 
 We also consider a second question, namely how does the adaptive model respond to varying numbers of input files?
 For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication?\iannote{Need to explain why we expect that?}\zhaonote{more input files indicate larger chance to fail, that is why replication makes more sense in this case}
@@ -708,8 +708,8 @@ the graph processing framework GraphX~\cite{graphx2014} and the memory centric s
 We also plan to investigate a wider range of applications, explore extensions to incorporate other constraints such as limited backup storage,
 and examine the use of asynchronous replication and hierarchical storage.
 
-{\footnotesize \bibliographystyle{acm}
-\bibliography{Resilience}}
+\bibliographystyle{abbrev}
+\bibliography{Resilience}
 
 
 %\theendnotes
