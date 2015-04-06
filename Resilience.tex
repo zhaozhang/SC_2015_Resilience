@@ -515,34 +515,34 @@ Table~\ref{tb:montage-stats} presents the basic statistics of each stage of the 
   	\end{center}
 \end{figure*}
 
-We specify a network bandwidth of 20~MB/s in AMFORA, which was measured in the system. \katznote{what system?} The optimization weight is set to 0.5, which means we put the same value on backup cost and expected recovery cost. Since the overall application runs in 200 seconds, we set the rate of failure as $\frac{1}{12800}$ (one fault per run).
+We specify a network bandwidth of 20~MB/s in AMFORA, which was measured in the EC2 cluster. The optimization weight is set to 0.5, which means we put the same value on backup cost and expected recovery cost. Since the overall application runs in 200 seconds, we set the rate of failure as $\frac{1}{12800}$ (one fault per run).
 
 
 \subsection{Failure-free Backup Overhead}
 We first run a set of experiments to measure costs incurred by resilience features in the absence of failures.
 We run the nine stages
-of the Montage application on our target platform in four different system configurations: no-resilience, lineage backup,
+of the Montage application on our target platform using four different system configurations: no-resilience, lineage backup,
 replication backup (two replicas per file), and adaptive backup.
 Figure~\ref{fig:montage} shows, for each of the latter three cases, the resilience overhead expressed as
 the ratio between its execution time and the no-resilience time.
 
-We see that in this no-failure case, the overhead incurred by the lineage approach is small (just 0.6\%),
+We see that in the no-failure case, the overhead incurred by the lineage approach is small (just 0.6\%),
 as the only substantial additional work is that of inserting the generating task information into the file metadata.
 The replication scheme introduces a larger overall overhead of 44.0\%, due to the need to replicate the output files
 to two other nodes.
 
 At the individual Montage stage level, the lineage scheme incurs less overhead than the replication scheme in all stages except mImgtbl-1,
-which comprises one task that reads all output files from mProject.
+which is just one task that reads all output files from mProject.
 With the replication scheme, mImgtbl-1 takes advantage of the locality of the replicas of the mProject output files.
-In the mBackground stages, the lineage scheme's overhead is significant (12.1\%) as this stage involves many
+In the mBackground stages, the lineage scheme's overhead is significant (12.1\%), because this stage involves many
 parallel, short tasks; the many concurrent metadata updates that result can introduce contention on the nodes that host the metadata.
-In contrast, the mProject, mDiffFit, mBackground, and mAdd stages all incur significant overhead when using replication as they each produce many and/or large output files.
+In contrast, the mProject, mDiffFit, mBackground, and mAdd stages all incur significant overhead when using replication, because they each produce many and/or large output files.
 For example, mDiffFit has over 2000 output files and mAdd has one task that writes one 1.2~GB output file.
 
-The adaptive replication scheme incurs an overall overhead of 2.9\%, which is between the overheads from lineage and replication.
+The adaptive replication scheme incurs an overall overhead of 2.9\%, which is inbetween the overheads from lineage and replication.
 For the mImgtbl-1, mOverlaps, mConcatFit, mBgModel, mImtbl-2 and mAdd stages, the adaptive
 scheme uses lineage backup.
-In the adaptive scheme, mDIffFit's performance runs faster than replication since its input files (outputs of mProjectPP) are backed up with replication.
+mDIffFit runs faster with the adaptive scheme than with replication, since its input files (outputs of mProjectPP) are backed up with replication.
 The mBackground stage runs in a time that is between that of the lineage and replication cases partially because the input files
 were replicated, and the output files are backed up through lineage.
 
@@ -557,26 +557,25 @@ were replicated, and the output files are backed up through lineage.
 \end{figure}
 
 Figure~\ref{fig:montage-space} shows the position of all output files in the test case on a two dimensional space of lineage and replication score calculated with Equation~\ref{EQ:combined}.
-Each point shows a single output file from each Montage stage. The points in the upper left triangle are those with lower
-replication score, while those in the lower right triangle are the files with lower lineage score.
-
+Each point shows a single output file from each Montage stage. The points in the upper left triangle are those where the replication score is lower that the lineage store, 
+while those in the lower right triangle are the files where the lineage score is lower than the replication score.
 
 \subsection{Recovery Performance}
 To evaluate recovery time, we inject failures during job execution by causing a node to fail (fail-stop) at a specified point.
-We inject failures in two specific places, namely at the end of the mProject stage and the mBackground stage,
+We inject failures in two specific places, namely at the end of the mProject stage and the end of the mBackground stage,
 in order to evaluate both single-stage recovery performance and multi-stage recovery (recursive recovery) performance.
 
 \subsubsection{Single-Stage Recovery}
-We first fail a node immediately after the mProject stage finishes and before the mImgtbl stage starts,
+We first fail a node immediately after the mProject stage finishes, before the mImgtbl stage starts,
 and evaluate the impact on the mImgtbl-1, mDiffFit, and mBackground stages, each of which
 needs to access the output files of mProject.
 When one of these files is not available, the system must recover that file through either reexecution (based on
 lineage metadata) or by accessing a file copy (if the file replicated).
 
-Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our three backup schemes for these three
+Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our three backup schemes for those three
 Montage stages.
 We see that the adaptive and replication schemes perform similarly in stages mImgtbl-1 and mDiffFit,
-as the output files of these two stages are backed up via replication; both also do better than
+as the output files of these two stages are backed up via replication; both also do better than the lineage scheme.
 The mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
 as all of its tasks benefit from the previously replicated mProject output files and all of its output files are backed up through lineage as shown in Figure~\ref{fig:montage-space}.
 
@@ -590,7 +589,7 @@ as all of its tasks benefit from the previously replicated mProject output files
 \end{figure}
 
 \subsubsection{Multi-Stage Recovery}
-We next schedule a node failure immediately after mBackground finishes and before mImgtbl-2 starts.
+We fail a node immediately after mBackground finishes, before mImgtbl-2 starts.
 Both the mImgtbl-2 and mAdd stages need to access mBackground's output files.
 However, in this case, a node failure results in the loss of output files from not only mBackground but also mProject---files
 that we need in order to recover mBackground's outputs.
@@ -612,11 +611,11 @@ Thus, upon file unavailability, the system recovers the mBackground output file 
 
 Figure~\ref{fig:montage-fail-mBackground} shows the time-to-solution comparison between the three replication schemes. 
 The adaptive scheme achieves similar performance with lineage and replication scheme for mImgtbl-2. 
-This indicates that recovery from lineage recursively and backing up the mImgtbl-2 output file with the same scheme has identical performance to recovery from replication recursively and backing up mImgtbl-2 output files through replication. 
-In fact, the adaptive approaches recovers the input files from lineage for mBackground and from replication for mProject. The mImgtbl-2 output file is backed up through replication.
+This indicates that recovery from lineage recursively and backing up the mImgtbl-2 output file with the same scheme has identical performance to recovery using replication recursively and backing up mImgtbl-2 output files through replication. 
+In fact, the adaptive approaches recovers the input files using lineage for mBackground and using replication for mProject. The mImgtbl-2 output file is backed up through replication.
 The adaptive scheme has significant performance advantages for the mAdd stage.
 It again achieves recursive recovery via lineage for mBackground and replication for mProject,
-but chooses to replicate the mAdd output file through lineage, which in turn results in better time-to-solution.
+but chooses to replicate the mAdd output file using lineage, which in turn results in better time-to-solution.
 
 
 
@@ -655,11 +654,12 @@ We see that unless $P$ is quite large, data and metadata copy costs dominate.
 
 Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations, which implies the failure rate is irrelevant to the adaptive backup decision making. Looking back into the expected recovery cost equations (Equations~\ref{EQ:spatial} and \ref{EQ:temporal}), though items leading by P preserves the mathematical accuracy, these items can be negligible in practice assuming P is really small in practice.
 
-We also consider a second question, namely how does the adaptive model respond to varying numbers of input files?
+We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
 For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication? (since more input files indicates a larger chance of failure)
 The answer is yes.
-Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phase take the same time, more input files makes the input phase run longer, which is reflected in the measurement of T. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
+Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of T. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
 
+\katznote{should this be part of the previous paragraph?}
 The lineage score and replication score now have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
 %\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
