@@ -84,10 +84,12 @@
 
 
 \begin{abstract}
-Resilience is critical for applications running on computing platforms with frequent node failures.
-Existing systems overcome node failure by resilient data access either through task re-execution or additional replicas. \katznote{prev is too blunt/general - if you are going to frame this as resilient data access, you first need to talk about the model you are using - data is primary, computing is secondary - overall state is stored via data - tasks are generally somewhat short-running - etc.}
+Resilience is critical for many-task applications running on computing platforms with node failures, especially when using transient in-memory file system for parallel scripting. The state of the runtime system is in the form of in-memory file system status.
+Existing systems overcome node failure by resilient data access either through task re-execution or additional replicas. 
+\katznote{prev is too blunt/general - if you are going to frame this as resilient data access, you first need to talk about the model you are using - data is primary, computing is secondary - overall state is stored via data - tasks are generally somewhat short-running - etc.} 
+\zhaonote{add a few words in the begging and also the sentence after this comment, it is more than 150 words now, but we can work on the word limit later.}
 However, applying either technique blindly can be inefficient due to 
-excessive recovery or data replication costs.
+excessive recovery or data replication costs due to the irregularity of task runtimes and I/O.
 We present an adaptive approach that balances backup and
 recovery costs to guide decisions regarding backup methods, with the goal of identifying
 at run time the best choices for a given computer system and application.
