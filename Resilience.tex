@@ -107,6 +107,7 @@ We also discover that, at least for this application, backup decisions are relat
 \end{abstract}
 
 \section{Introduction}
+\zhaonote{the overall tone of this paper is about unreliable distributed computing platforms, I will make it more supercomputer, and declare we are emulating a supercomputer with Amazon EC2.}
 %\{test}
 Distributed computing applications have long strived to %provide system resilience in the presence of 
 be resilient to 
@@ -144,7 +145,9 @@ Our experiments show that when running on 64 m3.large Amazon EC2 instances, the 
 
 
 
-In this paper, we make the following assumptions: The network that connects nodes has a uniform bandwidth and latency;  \katznote{why do we do this?  What happens if this is not true (which is almost certainly the case)} node failure means that the data stored in that node is not accessible; and lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+In this paper, we make the following assumptions: The network that connects nodes has a uniform bandwidth and latency;  \katznote{why do we do this?  What happens if this is not true (which is almost certainly the case)} 
+\zhaonote{We assume this to simplify the discussion. Also for the system, we require user to specify the bandwidth and latency as for system configuration. And we show that this works fine for performance in practice.}
+node failure means that the data stored in that node is not accessible; and lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
 The contribution of this work is the use of a general adaptive mathematical model for making dynamic backup decisions and our evaluation of this model in a practical setting.
@@ -366,8 +369,12 @@ Thus, when there is no failure, the cost of replication is simply the cost of cr
 
 \subsubsection{Expected Lineage Recovery Cost}
 A task $t_i$ has $n$ input files. Assume that those input files are located on $n$ other nodes.
-If all of these nodes are available, the expected recovery time through lineage (i.e., re-execution) is
-$(1-P)^nT$. \katznote{if all of the nodes are available, where does P come in?}  If there are one, two, or more failed nodes, the expected recovery time through lineage is:
+The probability that a node is available is $(1-P)$. The probability that all $n$ nodes are available is $(1-P)^n$.
+The expected recovery time through lineage (i.e., re-execution) is
+$(1-P)^nT$. 
+\katznote{if all of the nodes are available, where does P come in?}  
+\zhaonote{fixed the above text.}
+If there are one, two, or more failed nodes, the expected recovery time through lineage is:
 
 \noindent ~~~~ One failure:
 %
@@ -436,7 +443,10 @@ Higher bandwidth improves replication performance more significantly than lineag
 
 \section{Implementation}
 \label{sec:Impl}
-To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. It also needs to \katznote{it needs to, or it does?} identify what parameters in the command line are input files and which are output files.
+To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. It also has to 
+\katznote{it needs to, or it does?} 
+\zhaonote{``it has to'' may be more accurate, because we nee this piece of information to make the adaptive approach work.}
+identify what parameters in the command line are input files and which are output files.
 
 \begin{figure}[ht]
 	\begin{center}
@@ -463,7 +473,10 @@ The resulting directed acyclic graph of tasks is then executed.
 Our implementation is also responsible for synthesizing lineage metadata and for
 maintaining the database of file sizes and task execution times that is
 used to guide backup decisions. To this end, the execution engine tracks modifications to each
-local metadata and data cache \katznote{each local metadata and data cache? what does this mean} in order to gather task execution times and file usage patterns.
+local metadata and data
+\katznote{each local metadata and data cache? what does this mean} 
+\zhaonote{it should be without cache, fixed.}
+in order to gather task execution times and file usage patterns.
 This information allows each compute node to make individual backup decisions for each new
 file that is generated.
 
@@ -654,19 +667,21 @@ Surprisingly, the adaptive backup decisions remain the same under all five failu
 The reason for this lack of sensitivity to $P$ becomes clear when we look at Equations~\ref{EQ:spatial} and \ref{EQ:temporal}.
 We see that unless $P$ is quite large, data and metadata copy costs dominate.
 
-
-We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication? (since more input files indicates a larger chance of failure)
-The answer is yes.
-Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of T. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
-
 \katznote{should this be part of the previous paragraph?}
+\zhaonote{yes, done}
 The lineage score and replication score now have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
 %\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
   \item[] $S_{repl} = \alpha\frac{|y|}{B}(r-1) + (1-\alpha)\frac{|y|}{B} $
   \item[] $S_{line} = \alpha\frac{|M_y|}{B}(r-1) + (1-\alpha)T$
 \end{itemize}
+
+We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication? (since more input files indicates a larger chance of failure)
+The answer is yes.
+Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of T. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
+
+
 
 
 \section{Related Work}
