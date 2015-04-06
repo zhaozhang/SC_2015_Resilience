@@ -37,7 +37,7 @@
 
 \newif\ifdraft
 \drafttrue
-\draftfalse                                                                              
+%\draftfalse                                                                              
 \ifdraft
 \newcommand{\iannote}[1]{ {\textcolor{red}    { ***Ian:      #1 }}}
 \newcommand{\katznote}[1]{ {\textcolor{blue}    { ***Dan:      #1 }}}
@@ -72,7 +72,7 @@
 \and % use '\and' if you need 'another row' of author names
 \begin{tabular}{c}
 \textsuperscript{*}AMPLab, University of California, Berkeley \\
-\textsuperscript{+}Computation Institute, University of Chicago
+\textsuperscript{+}Computation Institute, University of Chicago \& Argonne National Laboratory
 \end{tabular}
 } 
 
@@ -85,14 +85,14 @@
 
 \begin{abstract}
 Resilience is critical for applications running on computing platforms with frequent node failures.
-Existing systems overcome node failure by resilience data access either through task re-execution or additional replicas.
+Existing systems overcome node failure by resilient data access either through task re-execution or additional replicas. \katznote{prev is too blunt/general - if you are going to frame this as resilient data access, you first need to talk about the model you are using - data is primary, computing is secondary - overall state is stored via data - tasks are generally somewhat short-running - etc.}
 However, applying either technique blindly can be inefficient due to 
 excessive recovery or data replication costs.
 We present an adaptive approach that balances backup and
 recovery costs to guide decisions regarding backup methods, with the goal of identifying
 at run time the best choices for a given computer system and application.
 We implement this adaptive approach inside the AMFORA parallel scripting framework
-and evaluate its effectiveness with a mage processing application, Montage.
+and evaluate its effectiveness with an image processing application, Montage.
 We find that the adaptive approach recovers up to 57\% faster than
 do pure re-execution or replication, while introducing only 2.9\% overhead in failure-free performance on 64 compute nodes.
 We also discover that, at least for this application, backup decisions are relatively insensitive to node failure rate.
