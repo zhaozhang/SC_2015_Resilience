@@ -470,7 +470,7 @@ file that is generated.
 \section{Performance Evaluation}
 \label{sec:Perf}
 We evaluate our approach using an Amazon EC2 cluster with 64 m3.large instances, each
-equipped with 2 Intel Xeon E5-2670 vCPU and 7.5~GB memory. 
+equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
 
 The Montage test case is a 3x3 degree image mosaic of 2MASS data centered at Galaxy m101. 
 The application has 369 initial input files (raw images) and one final output. 
@@ -515,7 +515,7 @@ Table~\ref{tb:montage-stats} presents the basic statistics of each stage of the 
   	\end{center}
 \end{figure*}
 
-We specify a network bandwidth of 20~MB/s in AMFORA, which was measured in the system. The optimization weight is set to 0.5, which means we put the same weight into backup cost and expected recovery cost. Since the overall application runs in 200 seconds, we set the rate of failure as $\frac{1}{12800}$ (one fault per run).
+We specify a network bandwidth of 20~MB/s in AMFORA, which was measured in the system. \katznote{what system?} The optimization weight is set to 0.5, which means we put the same value on backup cost and expected recovery cost. Since the overall application runs in 200 seconds, we set the rate of failure as $\frac{1}{12800}$ (one fault per run).
 
 
 \subsection{Failure-free Backup Overhead}
