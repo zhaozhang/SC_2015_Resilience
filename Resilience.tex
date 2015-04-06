@@ -213,16 +213,6 @@ We shown in Listing~\ref{lst:Montage} the AMFORA script code for the first two s
 #!/bin/bash
 
 #mProjectPP
-<<<<<<< HEAD
-#for each file in rawdir/ we run a 
-#mProject  task with it as input file 
-#and produces an  output file 
-#stored in tempdir/
-
-#Queue is the API to push a task into 
-#queue, Execute is the API to run the  
-#queued tasks in parallel
-=======
 #for each file in rawdir/ we run a  
 #mProject task with it as input file   
 #and produces an output file stored  
@@ -232,7 +222,6 @@ We shown in Listing~\ref{lst:Montage} the AMFORA script code for the first two s
 #the queue
 #Execute is the API to run the queued  
 #tasks in parallel
->>>>>>> 03d9e15fe23901d92179317deb33fa37b3a8a96e
 
 mkdir tempdir/
 for file in `ls rawdir/`
@@ -252,13 +241,8 @@ done
 mImgtbl tempdir/ images.tbl 	    
 \end{lstlisting}
 
-<<<<<<< HEAD
-Lines 13--19 enqueue tasks; upon calling Line 19, all queued tasks are dispatched
-to available compute nodes for execution. Line 27 is a simple example of AMFORA collective data movement:
-=======
 Lines 14--19 enqueue tasks; line 20 dispatches all queued tasks  
 to available compute nodes for execution. Line 28 is a simple example of AMFORA collective data movement:
->>>>>>> 03d9e15fe23901d92179317deb33fa37b3a8a96e
 it moves all files in the {\tt tempdir/} directory from multiple nodes to a single node using a minimum-spanning tree algorithm.
 AMFORA supports multicast, gather, scatter, allgather, and shuffle (alltoall) data flows.
 
@@ -591,13 +575,8 @@ lineage metadata) or by accessing a file copy (if the file replicated).
 Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our three backup schemes for those three
 Montage stages.
 We see that the adaptive and replication schemes perform similarly in stages mImgtbl-1 and mDiffFit,
-<<<<<<< HEAD
-as the output files of these two stages are backed up via replication; both also do better than
-the mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
-=======
 as the output files of these two stages are backed up via replication; both also do better than the lineage scheme.
 The mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
->>>>>>> 03d9e15fe23901d92179317deb33fa37b3a8a96e
 as all of its tasks benefit from the previously replicated mProject output files and all of its output files are backed up through lineage as shown in Figure~\ref{fig:montage-space}.
 
 \begin{figure}[ht]
@@ -727,11 +706,7 @@ the graph processing framework GraphX~\cite{graphx2014} and the memory centric s
 We also plan to investigate a wider range of applications, explore extensions to incorporate other constraints such as limited backup storage,
 and examine the use of asynchronous replication and hierarchical storage.
 
-<<<<<<< HEAD
-\bibliographystyle{abbrev}
-=======
 \bibliographystyle{abbrv}
->>>>>>> 03d9e15fe23901d92179317deb33fa37b3a8a96e
 \bibliography{Resilience}
 
 
