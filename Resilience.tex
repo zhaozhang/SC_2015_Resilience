@@ -644,9 +644,9 @@ The failure rate ($P$) of a computer system can be difficult to measure in pract
 For example, Amazon EC2 reports  system availability as a monthly uptime percentage~\cite{AWS-SLA}.
 The Blue Gene/Q supercomputer's MTTF is reported as 1--7 days~\cite{Snir-resilience}, system-wide.
 Given a customized allocation size
-\iannote{If we really knew the rate, that would be a simple arithmetic. Is the real issue that
-failure rates are not reported, not known, or are variable?} 
-\zhaonote{as the references show, it is hard to convert the numbers published to real use case, even though the number is directly failure rate, it means the overall system including compute nodes, network, storage.}
+%\iannote{If we really knew the rate, that would be a simple arithmetic. Is the real issue that
+%failure rates are not reported, not known, or are variable?} 
+%\zhaonote{as the references show, it is hard to convert the numbers published to real use case, even though the number is directly failure rate, it means the overall system including compute nodes, network, storage.}
 and hardware/software stack, it can be hard for a user to convert these metrics to accurate MTTFs for a particular execution.
 
 Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations, which implies that the failure rate is irrelevant to the adaptive backup decision making, at least for this application.
@@ -656,12 +656,12 @@ We see that unless $P$ is quite large, data and metadata copy costs dominate.
 Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations, which implies the failure rate is irrelevant to the adaptive backup decision making. Looking back into the expected recovery cost equations (Equations~\ref{EQ:spatial} and \ref{EQ:temporal}), though items leading by P preserves the mathematical accuracy, these items can be negligible in practice assuming P is really small in practice.
 
 We also consider a second question, namely how does the adaptive model respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication?\iannote{Need to explain why we expect that?}\zhaonote{more input files indicate larger chance to fail, that is why replication makes more sense in this case}
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical to each other except for the number of input files, can the adaptive model tell that the output of {\em task 4} should be more likely to be backed up through replication? (since more input files indicates a larger chance of failure)
 The answer is yes.
 Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phase take the same time, more input files makes the input phase run longer, which is reflected in the measurement of T. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
 
-The lineage score and replication score now have a simpler form than that in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
-\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
+The lineage score and replication score now have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
+%\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
   \item[] $S_{repl} = \alpha\frac{|y|}{B}(r-1) + (1-\alpha)\frac{|y|}{B} $
   \item[] $S_{line} = \alpha\frac{|M_y|}{B}(r-1) + (1-\alpha)T$
