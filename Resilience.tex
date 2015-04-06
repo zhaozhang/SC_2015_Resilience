@@ -106,23 +106,25 @@ We also discover that, at least for this application, backup decisions are relat
 
 \section{Introduction}
 %\{test}
-Distributed computing applications have long strived to provide system resilience in the 
-presence of unreliable computing nodes. As applications scale to thousands and tens of thousands of 
-compute nodes, the likelihood of a single node failing during execution increases~\cite{gfs2003, exaroadmap2011}. 
+Distributed computing applications have long strived to %provide system resilience in the presence of 
+be resilient to 
+unreliable computing nodes. As applications scale to thousands and tens of thousands of 
+compute nodes, the likelihood of a single node failing during execution increases proportionally~\cite{gfs2003, exaroadmap2011}. 
 
-In parallel computing, much previous research has focused on checkpointing, in which process states are replicated to stable storage that can tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. These works all view the computation as a long-running parallel task and use a fixed checkpointing interval throughout. 
+In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. These works all view the computation as a long-running parallel task and use a fixed checkpointing interval throughout. 
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
-Common optimization goals in these approaches are minimizing the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), or coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
+Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
 
-The emergence of the MapReduce~\cite{mapreduce-04} and Many Task Computing~\cite{raicu08} models
-break the abstraction of a single, long-running task. In these models, a distributed computation can be viewed as many, often short-lived tasks 
+\katznote{the concept of this paragraph needs to be copied into the abstract near my note}
+In the MapReduce~\cite{mapreduce-04} and Many Task Computing~\cite{raicu08} models,
+the abstraction of a single, long-running task is replaced by many, often short-lived tasks 
 that are linked by producer-consumer data sharing relationships.
 Many scientific applications are also naturally composed of numerous small tasks~\cite{FALKON-SC-08}. 
 This short task abstraction removes the need for coordinated checkpointing: we can think of tasks of atomic units that either execute to completion
 or fail, and rethink system resilience in terms of ensuring the availability of the data that flows between tasks.
-It then becomes possible to recover from node failure simply by recreating data located on the failed node---which
-if we have preserved either metadata describing how to reexecute a task (a {\em lineage} backup) or the data itself (a {\em replication} backup),
-we can achieve by 1) reexecuting the task(s) that produced the missing data or 2) accessing copies of that data located on other nodes, respectively.
+It then becomes possible to recover from node failure simply by recreating data located on the failed node. 
+If we have preserved either metadata describing how to reexecute a task (a {\em lineage} backup) or the data itself (a {\em replication} backup),
+we can achieve this by 1) reexecuting the task(s) that produced the missing data or 2) accessing copies of that data located on other nodes, respectively.
 Meanwhile, all other tasks can continue running as they are not affected by the failure.
 
 The two backup and recovery approaches just described have been employed in various systems. For example,
@@ -131,16 +133,16 @@ while RAID~\cite{raid1988} and the Hadoop Distributed File System (HDFS)~\cite{H
 However, irregular execution times, data sizes, and data dependencies can cause problems for each approach. Universal application of the lineage technique can result in excessive recovery costs, since a failure can 
 require restarting deep in the lineage graph.
 On the other hand, ubiquitous application of replication may result in excessive overheads when failures are rare, due to data copying and storage costs.
-Thus, we present here a new configurable adaptive model that chooses between these two approaches dynamically,
-based on online, model-driven estimates backup costs and recovery costs. We integrate this adaptive approach with
+Thus, we present here a new configurable adaptive model that dynamically chooses between these two approaches,
+based on online, model-driven estimates of backup and recovery costs. We integrate this adaptive approach into
 AMFORA~\cite{AMFS2013},
-a parallel scripting framework for scientific computing, and evaluate its performance in the context of a large many task scientific application, Montage~\cite{montage1}. 
+a parallel scripting framework for scientific computing, and evaluate its performance in the context of a large many task scientific application, Montage~\cite{montage2, montage1}. 
 Our experiments show that when running on 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely lineage or replication approach, and introduces only 2.9\% of failure-free overhead when compared to no backups.
 %The experiment of PageRank of GraphX on the Twitter dataset shows \zhaonote{need to update the number}
 
 
 
-In this paper, we make the following assumptions: The network that connects nodes has a uniform bandwidth and latency. Node failure refers to where the data stored in that node is not accessible. Lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+In this paper, we make the following assumptions: The network that connects nodes has a uniform bandwidth and latency;  \katznote{why do we do this?  What happens if this is not true (which is almost certainly the case)} node failure means that the data stored in that node is not accessible; and lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
 The contribution of this work is the use of a general adaptive mathematical model for making dynamic backup decisions and our evaluation of this model in a practical setting.
@@ -148,7 +150,7 @@ The model is applicable to a broad range of applications running on clouds, clus
 
 
 The rest of paper is organized as follows:
-Section~\ref{sec:background} briefly introduces AMFORA's architecture, programming model and data management.
+Section~\ref{sec:background} briefly introduces Montage and AMFORA, including AMFORA's architecture, programming model and data management.
 %and GraphX. 
 Section~\ref{sec:Model} introduces the task abstraction, the analytical model, and the dynamic replication algorithm. 
 Section~\ref{sec:Impl} describes the changes made to AMFORA 
@@ -211,13 +213,15 @@ We shown in Listing~\ref{lst:Montage} the AMFORA script code for the first two s
 #!/bin/bash
 
 #mProjectPP
-#for each file in rawdir/ we run a mProject 
-#task with it as input file and produces an 
-#output file stored in tempdir/
+#for each file in rawdir/ we run a  
+#mProject task with it as input file   
+#and produces an output file stored  
+#in tempdir/
 
-#Queue is the API to push a task into queue
-#Execute is the API to run the queued tasks 
-#in parallel
+#Queue is the API to push a task into 
+#the queue
+#Execute is the API to run the queued  
+#tasks in parallel
 
 mkdir tempdir/
 for file in `ls rawdir/`
@@ -227,18 +231,18 @@ do
 done
 %*\texttt{\textbf{Execute}}*) 
 
-#Gather API moves all files stored in tempdir/ 
-#to a single node
+#Gather API moves all files stored in 
+#tempdir/ to a single node
 
 #Then the mImgtbl task is launched to
-#processes the files and writes outputs 
+#processes the files and write outputs 
 #to images.tbl
 %*\texttt{\textbf{Gather}}*)  tempdir/
 mImgtbl tempdir/ images.tbl 	    
 \end{lstlisting}
 
-Lines 12--18 enqueue tasks; upon calling Line 18, all queued tasks are dispatched
-to available compute nodes for execution. Line 26 is a simple example of AMFORA collective data movement:
+Lines 14--19 enqueue tasks; line 20 dispatches all queued tasks  
+to available compute nodes for execution. Line 28 is a simple example of AMFORA collective data movement:
 it moves all files in the {\tt tempdir/} directory from multiple nodes to a single node using a minimum-spanning tree algorithm.
 AMFORA supports multicast, gather, scatter, allgather, and shuffle (alltoall) data flows.
 
