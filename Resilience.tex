@@ -84,12 +84,10 @@
 
 
 \begin{abstract}
-Resilience is critical for many-task applications running on computing platforms with node failures, especially when using transient in-memory file system for parallel scripting. The state of the runtime system is in the form of in-memory file system status.
-Existing systems overcome node failure by resilient data access either through task re-execution or additional replicas. 
-\katznote{prev is too blunt/general - if you are going to frame this as resilient data access, you first need to talk about the model you are using - data is primary, computing is secondary - overall state is stored via data - tasks are generally somewhat short-running - etc.} 
-\zhaonote{add a few words in the begging and also the sentence after this comment, it is more than 150 words now, but we can work on the word limit later.}
+Resilience is critical for many-task applications running on computing platforms with node failures, especially when using transient in-memory file system for parallel scripting. The state of these scripts is stored, in practice, by the files they write.
+Existing systems overcome node failure by resilient data access either through task re-execution or additional file replicas. 
 However, applying either technique blindly can be inefficient due to 
-excessive recovery or data replication costs due to the irregularity of task runtimes and I/O.
+excessive recovery or replication costs due to the irregularity of task runtimes and I/O.
 We present an adaptive approach that balances backup and
 recovery costs to guide decisions regarding backup methods, with the goal of identifying
 at run time the best choices for a given computer system and application.
@@ -118,7 +116,6 @@ In parallel computing, much previous research has focused on checkpointing proce
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
 Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
 
-\katznote{the concept of this paragraph needs to be copied into the abstract near my note}
 In the MapReduce~\cite{mapreduce-04} and Many Task Computing~\cite{raicu08} models,
 the abstraction of a single, long-running task is replaced by many, often short-lived tasks 
 that are linked by producer-consumer data sharing relationships.
@@ -145,9 +142,7 @@ Our experiments show that when running on 64 m3.large Amazon EC2 instances, the 
 
 
 
-In this paper, we make the following assumptions: The network that connects nodes has a uniform bandwidth and latency;  \katznote{why do we do this?  What happens if this is not true (which is almost certainly the case)} 
-\zhaonote{We assume this to simplify the discussion. Also for the system, we require user to specify the bandwidth and latency as for system configuration. And we show that this works fine for performance in practice.}
-node failure means that the data stored in that node is not accessible; and lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably in practice.  In the case of node failure, we assume that the data stored in that node is not accessible.  We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failure are uncorrelated. But later we discover the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
 The contribution of this work is the use of a general adaptive mathematical model for making dynamic backup decisions and our evaluation of this model in a practical setting.
@@ -372,8 +367,6 @@ A task $t_i$ has $n$ input files. Assume that those input files are located on $
 The probability that a node is available is $(1-P)$. The probability that all $n$ nodes are available is $(1-P)^n$.
 The expected recovery time through lineage (i.e., re-execution) is
 $(1-P)^nT$. 
-\katznote{if all of the nodes are available, where does P come in?}  
-\zhaonote{fixed the above text.}
 If there are one, two, or more failed nodes, the expected recovery time through lineage is:
 
 \noindent ~~~~ One failure:
@@ -443,10 +436,8 @@ Higher bandwidth improves replication performance more significantly than lineag
 
 \section{Implementation}
 \label{sec:Impl}
-To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. It also has to 
-\katznote{it needs to, or it does?} 
-\zhaonote{``it has to'' may be more accurate, because we nee this piece of information to make the adaptive approach work.}
-identify what parameters in the command line are input files and which are output files.
+To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost. The execution engine captures task runtime information such as time-to-solution and I/O size. We also require that it
+identify which parameters in the command line are input files and which are output files.
 
 \begin{figure}[ht]
 	\begin{center}
@@ -472,10 +463,8 @@ The resulting directed acyclic graph of tasks is then executed.
 
 Our implementation is also responsible for synthesizing lineage metadata and for
 maintaining the database of file sizes and task execution times that is
-used to guide backup decisions. To this end, the execution engine tracks modifications to each
+used to guide backup decisions. To this end, the execution engine tracks modifications to all
 local metadata and data
-\katznote{each local metadata and data cache? what does this mean} 
-\zhaonote{it should be without cache, fixed.}
 in order to gather task execution times and file usage patterns.
 This information allows each compute node to make individual backup decisions for each new
 file that is generated.
@@ -665,11 +654,11 @@ and hardware/software stack, it can be hard for a user to convert these metrics 
 
 Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations, which implies that the failure rate is irrelevant to the adaptive backup decision making, at least for this application.
 The reason for this lack of sensitivity to $P$ becomes clear when we look at Equations~\ref{EQ:spatial} and \ref{EQ:temporal}.
-We see that unless $P$ is quite large, data and metadata copy costs dominate.
-
-\katznote{should this be part of the previous paragraph?}
-\zhaonote{yes, done}
-The lineage score and replication score now have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
+We see that unless $P$ is quite large, data and metadata copy costs dominate,
+%
+%\katznote{should this be part of the previous paragraph?}
+%\zhaonote{yes, done}
+and the lineage score and replication score have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
 %\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
   \item[] $S_{repl} = \alpha\frac{|y|}{B}(r-1) + (1-\alpha)\frac{|y|}{B} $
