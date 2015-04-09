@@ -148,15 +148,8 @@ Thus, we present here a new configurable adaptive method that dynamically choose
 based on online, model-driven estimates of backup and recovery costs. We integrate this adaptive method into
 AMFORA~\cite{AMFS2013},
 a parallel scripting framework for scientific computing, and evaluate its performance in the context of a large many task scientific application, Montage~\cite{montage2, montage1}. 
-Our experiments show that when emulating a supercomputer with 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
+Our experiments show that when emulating a supercomputer using 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
 %The experiment of PageRank of GraphX on the Twitter dataset shows \zhaonote{need to update the number}
-
-\kylenote{Could these assumptions come later?} \katznote{perhaps could be moved to the start of Section 3}
-In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true for the case of a supercomputer where there is no local disk.
-%\zhaonote{add more words to previous sentence to make it supercomputer} 
-%\katznote{future supercomputers, as well as some past ones, have had local disk} 
-%\zhaonote{shall I say ``in the case of there is no local disk'', if there is local disk, someone may challenge why do not use asynchronous replication to disk since disk failure is rare?}
-We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 The contribution of this work is the use of a general adaptive mathematical model for making dynamic resilience %\zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
 decisions and our evaluation of this model in a practical setting.
@@ -257,7 +250,12 @@ to available compute nodes for execution. Line 28 is a simple example of AMFORA 
 it moves all files in the {\tt tempdir/} directory from multiple nodes to a single node using a minimum-spanning tree algorithm.
 AMFORA supports multicast, gather, scatter, allgather, and shuffle (alltoall) data flows.
 
-\subsection{AMFORA Data Management}
+\subsection{AMFORA Task and Data Management}
+Tasks are launched by the AMFORA Execution Engine, which also monitors their execution and collects runtime information
+that is subsequently used as input to the backup decision process.
+Information collected includes per-task queue time, start time, and end time, plus file usage (input or output) based on observations
+of runtime state mutations.
+
 The AMFORA File System manages three types of data: directory metadata, file metadata, and file data.
 Every compute node in an AMFORA system is both a metadata server and an I/O server. 
 The file system implements multi-reader single-writer consistency: a file can be read multiple times from multiple processes but can only be written by a single process once. Once a file is released (a POSIX primitive) from writing, it cannot be modified further. 
@@ -273,11 +271,7 @@ support the partitioning or distribution of files across multiple nodes. While a
 a potential area for future work, this restriction does not represent a significant limitation in practice, as file sizes are generally
 small in many-task applications~\cite{MTC-Bluewaters}. 
 
-\subsection{AMFORA Task Management}
-Tasks are launched by the AMFORA Execution Engine, which subsequently monitors their execution and collects runtime information
-that is subsequently used as input to the backup decision process.
-Information collected includes per-task queue time, start time, and end time, plus file usage (input or output) based on observations
-of runtime state mutations.
+%\subsection{AMFORA Task Management}
 
 %\subsection{GraphX}
 %text
@@ -295,8 +289,17 @@ In general, we view a task as a function $t$ that takes $n$ input files and prod
 \begin{equation}
 y_{1}, \ldots, y_{m} = t(x_{1}, \ldots, x_{n})
 \end{equation}
+%
+Table~\ref{tab:modelterms} defines these and other terms used in subsequent discussion.
 
-Table~\ref{tab:modelterms} defines these and other terms used in subsequent discussion. 
+%\kylenote{Could these assumptions come later?} \katznote{perhaps could be moved to the start of Section 3}
+We assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice. 
+In the case of node failure, we assume that the data stored in that node is not accessible, which is true for the case of a supercomputer where there is no local disk.
+%\zhaonote{add more words to previous sentence to make it supercomputer} 
+%\katznote{future supercomputers, as well as some past ones, have had local disk} 
+%\zhaonote{shall I say ``in the case of there is no local disk'', if there is local disk, someone may challenge why do not use asynchronous replication to disk since disk failure is rare?}
+We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+
 
 \begin{table}
 \centering
