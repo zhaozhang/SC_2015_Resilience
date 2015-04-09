@@ -432,8 +432,10 @@ During execution, the system will always select the backup method with lower bac
 %\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
 In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. 
 The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. 
-So the system will always prefer to optimize the performance with the presence of failures.
-\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$} \katznote{I don't understand the previous sentence}
+%So the system will always prefer to optimize the performance with the presence of failures.
+\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$} 
+\katznote{I don't understand the previous sentence}
+\zhaonote{I removed that sentence, it says the something as its previous.}
 Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
@@ -708,7 +710,7 @@ and the re-execution score and replication score have a simpler form than in Equ
 
 We also consider a second question, namely, how does the adaptive method respond to varying numbers of input files?
 For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model \kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} 
-\zhaonote{yes, let's do it. Kyle, would like to the editing?}
+\zhaonote{fixed, please review and remove this.}
 determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
 The answer is yes.
 Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive method is more likely to replicate the data.
