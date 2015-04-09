@@ -121,6 +121,7 @@ Our resilience mechanisms aim to enable continued (and uninterrupted) applicatio
 Importantly, we aim to minimize overhead in the failure-free case while providing rapid recovery in the presence of a failure.
 
 \kylenote{Could delete the following paragraph?} \katznote{I think it's needed}
+\zhaonote{yes, the short and many task abstraction is the reason why we can give up on the checkpointing method.}
 In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. They all view the computation as a long-running parallel task that must be periodically checkpointed. 
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
 Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
@@ -152,7 +153,10 @@ Our experiments show that when emulating a supercomputer with 64 m3.large Amazon
 
 
 \kylenote{Could these assumptions come later?}
-In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true in the context of a supercomputer where there is no local disk.\zhaonote{add more words to previous sentence to make it supercomputer}  \katznote{future supercomputers, as well as some past ones, have had local disk} We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true in the context of a supercomputer where there is no local disk.\zhaonote{add more words to previous sentence to make it supercomputer} 
+\katznote{future supercomputers, as well as some past ones, have had local disk} 
+\zhaonote{shall I say ``in the case of there is no local disk'', if there is local disk, someone may challenge why do not use asynchronous replication to disk since disk failure is rear?}
+We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
 The contribution of this work is the use of a general adaptive mathematical model for making dynamic recovery %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
@@ -413,7 +417,7 @@ To simplify our discussion, we assume a task writes its output files first to lo
 and {\bf E}: expected cost to recover the output file.
 
 To take both the backup cost and expected recovery cost into account, we use a linear combination of {\bf U} and {\bf E}, which we call % as the indicator score\iannote{A phrase that is unfamiliar to me.} 
-$S$, shown in Equation~\ref{EQ:combined}:
+Score $S$, shown in Equation~\ref{EQ:combined}:
 \begin{equation}
 S=\alpha*U+(1-\alpha)*E
 \label{EQ:combined}
@@ -450,7 +454,10 @@ Higher bandwidth improves replication performance more significantly than lineag
 
 \section{Implementation}
 \label{sec:Impl}
-To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost\kylenote{Is this expected recovery cost for both methods? or just lineage?}. The execution engine captures task runtime information such as time-to-solution and I/O size. We also require that it
+To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost
+\kylenote{Is this expected recovery cost for both methods? or just lineage?}. 
+\zhaonote{It is both.}
+The execution engine captures task runtime information such as time-to-solution and I/O size. We also require that it
 identify which parameters in the command line are input files and which are output files.
 
 \begin{figure}[ht]
@@ -488,7 +495,9 @@ file that is generated.
 \section{Performance Evaluation}
 \label{sec:Perf}
 We evaluate our approach by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
-\zhaonote{rewrite the previous sentence to make it supercomputer} \katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
+\zhaonote{rewrite the previous sentence to make it supercomputer} 
+\katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
+\zhaonote{There is some technical barrier for running AMFORA on supercomputers after BG/P is decommissioned. The NERSC Edison machine does not allow users to use FUSE on compute nodes and so do other Cray ones. BG/Q does not have a full linux kernel yet.}
 
 The Montage test case is a 3x3 degree image mosaic of 2MASS data centered at Galaxy m101. 
 The application has 369 initial input files (raw images) and one final output file (mosaic). 
@@ -553,7 +562,9 @@ to two other nodes.
 
 At the individual Montage stage level, the lineage scheme incurs less overhead than the replication scheme in all stages except mImgtbl-1,
 which is just one task that reads all output files from mProject.
-With the replication scheme, mImgtbl-1 takes advantage of the locality of the replicas of the mProject output files.\kylenote{I dont understand what you mean by take advantage of replica locality?}
+With the replication scheme, mImgtbl-1 takes advantage of the locality of the replicas of the mProject output files.
+\kylenote{I dont understand what you mean by take advantage of replica locality?}
+\zhaonote{Let's say mProject has 369 output files, if there is no replication, each node has about 6 files (64 nodes). By replicating the file two additional times, each node will have 18 files. So mImgtbl-1 will have 18 out of 369 files in the local this. Thus it can run faster.}
 In the mBackground stages, the lineage scheme's overhead is significant (12.1\%), because this stage involves many
 parallel, short tasks; the many concurrent metadata updates that result can introduce contention on the nodes that host the metadata.
 In contrast, the mProject, mDiffFit, mBackground, and mAdd stages all incur significant overhead when using replication, because they each produce many and/or large output files.
@@ -576,7 +587,10 @@ were replicated, and the output files are backed up through lineage.
         \end{center}
 \end{figure}
 
-Figure~\ref{fig:montage-space} shows the position of all output files in the test case on a two dimensional space of lineage and replication score\kylenote{cost? We never really define score. I dont mind calling it score but we should make sure that is clear earlier.} calculated with Equation~\ref{EQ:combined}.
+Figure~\ref{fig:montage-space} shows the position of all output files in the test case on a two dimensional space of lineage and replication score
+\kylenote{cost? We never really define score. I dont mind calling it score but we should make sure that is clear earlier.} 
+\zhaonote{I put a Score definition before Equation 7. It is ``Score'' as it is the linear combination of the expected backup and recovery cost. So there should be ``Lineage Score'' and ``Replication Score'' for each file.}
+calculated with Equation~\ref{EQ:combined}.
 Each point shows a single output file from each Montage stage. The points in the upper left triangle are those where the replication score is lower than the lineage store, 
 while those in the lower right triangle are the files where the lineage score is lower than the replication score.
 
@@ -668,7 +682,10 @@ Given a customized allocation size
 %\zhaonote{as the references show, it is hard to convert the numbers published to real use case, even though the number is directly failure rate, it means the overall system including compute nodes, network, storage.}
 and hardware/software stack, it can be difficult for a user to convert these metrics to accurate MTTFs for a particular execution.
 
-Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations\kylenote{what are these 5 configs?}, which implies that the failure rate is irrelevant to the adaptive backup decision, at least for this application.
+Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations of $P=\{\frac{1}{12}, \frac{1}{120},$ 
+$\frac{1}{1200}, \frac{1}{12000}, \frac{1}{120000}\}$
+\kylenote{what are these 5 configs?}
+, which implies that the failure rate is irrelevant to the adaptive backup decision, at least for this application.
 The reason for this lack of sensitivity to $P$ becomes clear when we look at Equations~\ref{EQ:spatial} and \ref{EQ:temporal}.
 We see that unless $P$ is quite large, data and metadata copy costs dominate,
 %
@@ -682,7 +699,9 @@ and the lineage score and replication score have a simpler form than in Equation
 \end{itemize}
 
 We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} 
+\zhaonote{yes, let's do it. Kyle, would like to the editing?}
+determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
 The answer is yes.
 Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
 
