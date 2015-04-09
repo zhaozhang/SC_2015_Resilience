@@ -1,0 +1,177 @@
+\relax 
+\citation{gfs2003}
+\citation{exaroadmap2011}
+\citation{young1974first}
+\citation{daly2006higher}
+\citation{chandy1985distributed}
+\citation{elnozahy1992performance}
+\citation{mapreduce-04}
+\citation{raicu08}
+\citation{FALKON-SC-08}
+\citation{RDD2012}
+\citation{badfs2004}
+\citation{raid1988}
+\citation{HDFS}
+\citation{AMFS2013}
+\citation{montage2}
+\citation{montage1}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{\thepage }}
+\newlabel{sec:background}{{2}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Montage}{\thepage }}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Montage tasks}}{\thepage }}
+\newlabel{tb:Montage}{{1}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}AMFORA}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}AMFORA Programming Model}{\thepage }}
+\newlabel{lst:Montage}{{1}{\thepage }}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}Parallel Script for Montage}{\thepage }}
+\citation{MTC-Bluewaters}
+\citation{MTC-Bluewaters}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Montage data flow. Ovals represent tasks and boxes represent files. Solid lines show data dependencies, dashed lines show task dependencies.  }}{\thepage }}
+\newlabel{fig:montage-flow}{{1}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}AMFORA Data Management}{\thepage }}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Resiliency model terms.}}{\thepage }}
+\newlabel{tab:modelterms}{{2}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}AMFORA Task Management}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Adaptive Backup Model}{\thepage }}
+\newlabel{sec:Model}{{3}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Backup Cost}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Expected Recovery Cost}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Expected Replication Recovery Cost}{\thepage }}
+\newlabel{EQ:spatial}{{5}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Expected Lineage Recovery Cost}{\thepage }}
+\newlabel{EQ:temporal}{{6}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Combining Backup and Recovery Cost}{\thepage }}
+\newlabel{EQ:combined}{{7}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Discussion}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Example tasks in a three dimensional space of computation time, I/O size, and number of input files. Rectangles are data, rectangle area is proportional to data size, arrows are data flows, and the length of arrows indicates task computation time. }}{\thepage }}
+\newlabel{fig:taxonomy}{{2}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Implementation}{\thepage }}
+\newlabel{sec:Impl}{{4}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces A data layout example with three-way replication. Node 2 produces file f, and Node 0 hosts f's metadata. Node 0 is chosen to host f's metadata by hashing f's file path. The actual data of f is replicated to Nodes 3 and 4, and the metadata is replicated to Nodes 1 and 2. }}{\thepage }}
+\newlabel{fig:datalayout}{{3}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Performance Evaluation}{\thepage }}
+\newlabel{sec:Perf}{{5}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Failure-free Backup Overhead}{\thepage }}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Number of tasks, inputs, and outputs, and input and output size, for each Montage stage}}{\thepage }}
+\newlabel{tb:montage-stats}{{3}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Montage performance comparison of lineage backup, replication backup, and adaptive backup resilience schemes without node failures during execution, shown as ratios between the time-to-solution of each resilience scheme against the no-resilience time-to-solution. Bars above the line indicates performance degradation, and bars below the line indicates performance improvements. The numbers underneath the stage labels are the baseline time-to-solution measured in seconds for overall application and each stage. }}{\thepage }}
+\newlabel{fig:montage}{{4}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Montage output files' positioning in a two dimensional space of replication score and lineage score. }}{\thepage }}
+\newlabel{fig:montage-space}{{5}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Recovery Performance}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Single-Stage Recovery}{\thepage }}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Multi-Stage Recovery}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Recovery performance of mImgtbl, mDiffFit, and mBackground following a node failure that occurs after mProjectPP finishes and before mImgtbl starts. }}{\thepage }}
+\newlabel{fig:montage-fail-mProjectPP}{{6}{\thepage }}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Recovery performance of mImgtbl and mAdd due to a node failure occurred right after mBackground finishes and before mImgtbl starts }}{\thepage }}
+\newlabel{fig:montage-fail-mBackground}{{7}{\thepage }}
+\citation{AWS-SLA}
+\citation{Snir-resilience}
+\citation{condor1988}
+\citation{libckpt1994}
+\citation{uncoordinated2010}
+\citation{mist1995}
+\citation{consistent1994}
+\citation{FTworkshop2009}
+\citation{survey2012}
+\citation{chord}
+\citation{raid1988}
+\citation{HDFS}
+\citation{ramcloud2010}
+\citation{ramcloud2014}
+\citation{ramakrishnan09vgrads}
+\citation{calheiros13deadlines}
+\citation{Chimera2002}
+\citation{RDD2012}
+\citation{ramakrishnan09vgrads}
+\citation{boinc04}
+\citation{abft}
+\citation{turmon1}
+\citation{turmon2}
+\citation{gunnels}
+\citation{diskless2010}
+\citation{condor1988}
+\citation{libckpt1994}
+\citation{dmtcp2009}
+\citation{blcr2006}
+\citation{bosilca02mpichv}
+\citation{ferreira2011rmpi}
+\citation{young1974first}
+\citation{daly2006higher}
+\citation{elnozahy1992performance}
+\citation{chandy1985distributed}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Impact of Optimization Weight}{\thepage }}
+\newlabel{sec:Perf:Weight}{{5.3}{\thepage }}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Impact of Failure Rate}{\thepage }}
+\newlabel{sec:Perf:Failure}{{5.4}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{\thepage }}
+\newlabel{sec:Related}{{6}{\thepage }}
+\citation{ramcloud2011}
+\citation{diskless1998}
+\citation{zhen04}
+\citation{diskless2010}
+\citation{star2008}
+\citation{erasure2009}
+\citation{diana2007}
+\citation{peris10location}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Backup decision making when varying the optimization weight. Files in the upper left triangle are backed up through replication and files in the lower right triangle are backed up through lineage. }}{\thepage }}
+\newlabel{fig:weight}{{8}{\thepage }}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion and Future Work}{\thepage }}
+\newlabel{sec:Con}{{7}{\thepage }}
+\citation{graphx2014}
+\citation{tachyon2014}
+\bibstyle{abbrv}
+\bibdata{Resilience}
+\bibcite{survey2012}{1}
+\bibcite{boinc04}{2}
+\bibcite{dmtcp2009}{3}
+\bibcite{AWS-SLA}{4}
+\bibcite{badfs2004}{5}
+\bibcite{HDFS}{6}
+\bibcite{bosilca02mpichv}{7}
+\bibcite{calheiros13deadlines}{8}
+\bibcite{mist1995}{9}
+\bibcite{chandy1985distributed}{10}
+\bibcite{daly2006higher}{11}
+\bibcite{mapreduce-04}{12}
+\bibcite{exaroadmap2011}{13}
+\bibcite{elnozahy1992performance}{14}
+\bibcite{ferreira2011rmpi}{15}
+\bibcite{Chimera2002}{16}
+\bibcite{gfs2003}{17}
+\bibcite{diskless2010}{18}
+\bibcite{graphx2014}{19}
+\bibcite{gunnels}{20}
+\bibcite{blcr2006}{21}
+\bibcite{star2008}{22}
+\bibcite{abft}{23}
+\bibcite{montage1}{24}
+\bibcite{MTC-Bluewaters}{25}
+\@writefile{toc}{\contentsline {section}{\numberline {8}References}{\thepage }}
+\bibcite{FTworkshop2009}{26}
+\bibcite{montage2}{27}
+\bibcite{tachyon2014}{28}
+\bibcite{condor1988}{29}
+\bibcite{diana2007}{30}
+\bibcite{ramcloud2011}{31}
+\bibcite{ramcloud2010}{32}
+\bibcite{raid1988}{33}
+\bibcite{peris10location}{34}
+\bibcite{libckpt1994}{35}
+\bibcite{diskless1998}{36}
+\bibcite{erasure2009}{37}
+\bibcite{raicu08}{38}
+\bibcite{FALKON-SC-08}{39}
+\bibcite{ramakrishnan09vgrads}{40}
+\bibcite{ramcloud2014}{41}
+\bibcite{Snir-resilience}{42}
+\bibcite{consistent1994}{43}
+\bibcite{chord}{44}
+\bibcite{uncoordinated2010}{45}
+\bibcite{turmon1}{46}
+\bibcite{turmon2}{47}
+\bibcite{young1974first}{48}
+\bibcite{RDD2012}{49}
+\bibcite{AMFS2013}{50}
+\bibcite{zhen04}{51}
