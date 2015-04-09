@@ -146,7 +146,7 @@ require restarting deep in the lineage graph.
 On the other hand, ubiquitous application of replication method may result in excessive overheads when failures are rare, due to data copying and storage costs.
 Thus, we present here a new configurable adaptive method that dynamically chooses between these two methods,
 based on online, model-driven estimates of backup and recovery costs. We integrate this adaptive method into
-AMFORA~\cite{AMFS2013},
+AMFORA~\cite{AME, AMFS2013},
 a parallel scripting framework for scientific computing, and evaluate its performance in the context of a large many task scientific application, Montage~\cite{montage2, montage1}. 
 Our experiments show that when emulating a supercomputer using 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
 %The experiment of PageRank of GraphX on the Twitter dataset shows \zhaonote{need to update the number}
@@ -699,7 +699,7 @@ We see that unless $P$ is quite large, data and metadata copy costs dominate,
 %
 %\katznote{should this be part of the previous paragraph?}
 %\zhaonote{yes, done}
-and the re-execution score and replication score have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
+and the re-execution score and replication score have a simpler form than in Equations~\ref{EQ:spatial} and \ref{EQ:temporal}
 %\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
   \item[] $S_{repl} = \alpha\frac{|y|}{B}(r-1) + (1-\alpha)\frac{|y|}{B} $
