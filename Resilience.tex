@@ -120,11 +120,11 @@ environment comprised of multiple nodes, each of which can independently store d
 Our resilience mechanisms aim to enable continued (and uninterrupted) application execution in the presence of node failures. 
 Importantly, we aim to minimize overhead in the failure-free case while providing rapid recovery in the presence of a failure.
 
-\kylenote{Could delete the following paragraph?} \katznote{I think it's needed}
-\zhaonote{yes, the short and many task abstraction is the reason why we can give up on the checkpointing method.}
-In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. \katznote{however, as Kyle points out, the part after this could be moved to related work} Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. They all view the computation as a long-running parallel task that must be periodically checkpointed. 
+%\kylenote{Could delete the following paragraph?} \katznote{I think it's needed}
+%\zhaonote{yes, the short and many task abstraction is the reason why we can give up on the checkpointing method.}
+In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures, assuming the computation is a long-running parallel task that must be periodically checkpointed. 
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
-Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
+
 
 In the MapReduce~\cite{mapreduce-04} and Many Task Computing~\cite{raicu08} models,
 the abstraction of a single, long-running task is replaced by many, often short-lived tasks 
@@ -704,7 +704,7 @@ and the re-execution score and replication score have a simpler form than in Equ
 \end{itemize}
 
 We also consider a second question, namely, how does the adaptive method respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} 
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model \kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} 
 \zhaonote{yes, let's do it. Kyle, would like to the editing?}
 determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
 The answer is yes.
@@ -715,6 +715,8 @@ Our computation of a task's time-to-solution $T$ includes three parts: input acc
 
 \section{Related Work}
 \label{sec:Related}
+Researchers have investigated the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}, all for long-running tasks.  Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
+
 Fault tolerant resilience models have been explored in small-scale applications for single-threaded applications on individual PCs~\cite{condor1988, libckpt1994}, large-scale distributed workflows~\cite{uncoordinated2010}, and parallel and HPC computing applications~\cite{mist1995, consistent1994,FTworkshop2009}, among others. In  general, most resilience approaches rely on some form of data replication, either explicitly via replicating intermediate files or implicitly via checkpointing application state.
 
 Replication of intermediate files is often the easiest approach for building resilient applications. Such algorithms can be employed trivially by an execution framework or file system without requiring application modification. Replication techniques are also used to enhance scalability and performance. While specific goals may differ, the replication techniques applied are similar. A brief summary of replication techniques in distributed storage environments is presented in a survey~\cite{survey2012}. Replication techniques are often classified as either static or dynamic. In static configurations a set number of replicas and hosts are chosen at the start of the application lifecycle and are then used throughout execution. In a dynamic model these parameters are changed depending on access patterns, storage capacity, and bandwidth.  Dynamic models often employ a decentralized architecture in which replicas are distributed over a peer-to-peer network~\cite{chord} and decentralized decision mechanisms are used to place and access replicas. Replication techniques have been used for decades in distributed file systems such as the classic RAID~\cite{raid1988} and more recently HDFS~\cite{HDFS} and RAMCloud~\cite{ramcloud2010, ramcloud2014} to replicate files over a distributed collection of nodes. %\zhaonote{add one sentence}
