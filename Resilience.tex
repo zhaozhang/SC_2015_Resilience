@@ -91,12 +91,12 @@ inherently volatile as they are not persisted to disk.
 Existing systems overcome node failure by providing resilient data access either through task re-execution or file replication. 
 However, applying either technique blindly can be inefficient due to 
 excessive recovery or replication costs associated with the irregularity of task runtimes and I/O.
-We present an adaptive approach that calculates and balances backup and
-recovery costs to guide resilience decisions. Our approach aims to identify
+We present an adaptive method that calculates and balances backup and
+recovery costs to guide resilience decisions. Our method aims to identify
 at run time the best choices for a given computer system and application.
-We implement this adaptive approach inside the AMFORA parallel scripting framework
+We implement this adaptive method inside the AMFORA parallel scripting framework
 and evaluate its effectiveness with an image processing application, Montage.
-We find that the adaptive approach recovers up to 57\% faster than
+We find that the adaptive method recovers up to 57\% faster than
 do pure re-execution or replication, while introducing only 2.9\% overhead in failure-free performance on 64 compute nodes.
 We also discover that, at least for this application, backup decisions are relatively insensitive to node failure rate.
 %We implement the adaptive backup model inside two distributed computing framework: AMFORA and
@@ -137,15 +137,15 @@ If we have preserved either metadata describing how to re-execute a task (a {\em
 we can achieve this by 1) re-executing the task(s) that produced the missing data or 2) accessing copies of that data located on other nodes, respectively.
 Meanwhile, all other tasks can continue running as they are not affected by the failure.
 
-The two backup and recovery approaches described above have been employed in various systems. For example,
+The two backup and recovery methods described above have been employed in various systems. For example,
 the Spark~\cite{RDD2012} and BAD-FS~\cite{badfs2004} systems re-execute tasks following node failure,
 while RAID 1~\cite{raid1988} and the Hadoop Distributed File System (HDFS)~\cite{HDFS} replicate each file (at the block level) a configurable number of times to preserve data access following node failure.
 However, irregular execution times, data sizes, and data dependencies can cause problems for each approach when applied to many-task applications. 
-Universal application of the lineage technique can result in excessive recovery costs, since a failure can 
+Universal application of the re-execution method can result in excessive recovery costs, since a failure can 
 require restarting deep in the lineage graph.
-On the other hand, ubiquitous application of replication may result in excessive overheads when failures are rare, due to data copying and storage costs.
-Thus, we present here a new configurable adaptive model that dynamically chooses between these two approaches,
-based on online, model-driven estimates of backup and recovery costs. We integrate this adaptive approach into
+On the other hand, ubiquitous application of replication method may result in excessive overheads when failures are rare, due to data copying and storage costs.
+Thus, we present here a new configurable adaptive method that dynamically chooses between these two methods,
+based on online, model-driven estimates of backup and recovery costs. We integrate this adaptive method into
 AMFORA~\cite{AMFS2013},
 a parallel scripting framework for scientific computing, and evaluate its performance in the context of a large many task scientific application, Montage~\cite{montage2, montage1}. 
 Our experiments show that when emulating a supercomputer with 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
@@ -159,7 +159,7 @@ In this paper, we assume the network that connects nodes has a uniform bandwidth
 We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
-The contribution of this work is the use of a general adaptive mathematical model for making dynamic recovery %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
+The contribution of this work is the use of a general adaptive mathematical model for making dynamic resilience \zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
 decisions and our evaluation of this model in a practical setting.
 The model is applicable to a broad range of applications running on clouds, clusters, and supercomputers. We also show that node failure rate is irrelevant to backup choice decision in practice.
 
@@ -289,9 +289,9 @@ of runtime state mutations.
 \section{Adaptive Backup Model}
 \label{sec:Model}
 
-Our resilience approach builds on an analytical model that relates the costs of backup and recovery to system parameters
+Our resilience method builds on an analytical model that relates the costs of backup and recovery to system parameters
 such as communication cost and failure rate.
-Here we explain this model in detail and present the algorithm that we use to make dynamic replication decisions. 
+Here we explain this model in detail and present the algorithm that we use to make dynamic resilience decisions. 
 
 In general, we view a task as a function $t$ that takes $n$ input files and produces $m$ output files:
 \begin{equation}
@@ -376,7 +376,7 @@ equal to the time required to transfer the file plus the time required to switch
 in the case of failure, where the likelihood of needing to use the replica is based on the rate of failure $P$
 Thus, when there is no failure, the cost of replication is simply the cost of creating the replicas
 
-\subsubsection{Expected Lineage Recovery Cost}
+\subsubsection{Expected Re-execution Recovery Cost}
 The recovery time via re-execution is dependent on both the time to re-execute the task as well
 as the time to recover the required input files of that task. 
 A task $t_i$ has $n$ input files. Assume that those input files are located on $n$ other nodes.
@@ -398,14 +398,14 @@ ${n \choose 1}P(1-P)^{n-1}(T+E(x_i))$
 \noindent where ${E(x_i)}$ refers to the recovery cost of item ${x_i}$ via the technique with which file ${x_i}$ is backed up. 
 
 
-Adding these items gives the following closed form for the expected lineage recovery cost:
+Adding these items gives the following closed form for the expected re-execution recovery cost:
 
 \begin{equation}
-E_{line}(y) = T+P\sum_{i=1}^{n}E(x_i)
+E_{reex}(y) = T+P\sum_{i=1}^{n}E(x_i)
 \label{EQ:temporal}
 \end{equation}
 
-Equation~\ref{EQ:temporal} defines the lineage recovery cost for an output file $y$ to be
+Equation~\ref{EQ:temporal} defines the re-execution recovery cost for an output file $y$ to be
 equal to the time to re-execute the task $T$ plus the sum of the time required to recover all of $T$'s
 input files. Here, the only overhead (in the case without failure) is related to 
 the cost of updating file metadata with the information needed to re-execute the task.
@@ -423,24 +423,31 @@ S=\alpha*U+(1-\alpha)*E
 \label{EQ:combined}
 \end{equation}
 %
-For every output file, we evaluate the total cost with both lineage or replication as the backup choice, and use the technique with the lower total cost.
+For every output file, we evaluate the total cost with both re-execution and replication as the backup choice, and use the one with the lower total cost.
 The term $\alpha$ in Equation~\ref{EQ:combined} is a weight, which the user can set to between 0 and 1. 
  If the user's optimization goal is backup cost, users can specify $\alpha$ close to 1
-That means that execution will optimize the backup cost over recovery cost. In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
+That means that execution will optimize the backup cost over recovery cost. 
+During execution, the system will always select the backup method with lower backup cost, thus minimizing the failure-free overhead.
+\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
+In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. 
+The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. 
+So the system will always prefer to optimize the performance with the presence of failures.
+\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
+Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
 %\kylenote{I'm not sure if this section adds a lot, I'm not sure if the discussion is based on what you think? or are we forward referencing results? I would vote to remove (although the picture is nice).}
 %\katznote{I think this makes sense to keep - it explores the equations we just presented.}
-We next discuss how task and system parameters impact the choice of backup approach.
+We next discuss how task and system parameters impact the choice of backup method.
 The four example tasks in Figure~\ref{fig:taxonomy} vary in their computation time, I/O size, and number of input files. If we control the comparison by varying only one factor, we see some trends about backup decisions.
 An output file produced by a longer-running task will tend to be backed up by replication because the cost of regenerating the file by re-executing the task will be large.
 %\iannote{It is unclear from the text whether the following are qualitative statements based on your intuition, or based on simulations.}
 %\iannote{Do you not assume that there is just one output file per task?} 
 %\iannote{I realize now something that is bothering me. You seem to alternate between a perspective based on files and a perspective based on tasks. I think the text will be clearer if you choose one. Let's say it is files. Then this sentence would be ``An output file produced by a longer-running task will tend to be backed up by replication." This sentence (and the other sentences in this section) would be clearer if we added some explanatory words, such as ``because the cost of regenerating the file by re-executing the task will be large."}\zhaonote{I see, fixed}
-A larger output file is more likely to be backed up through lineage, since replicating this file takes a long time.
+A larger output file is more likely to be backed up through re-execution, since replicating this file takes a long time.
 A file that depends on more input files has a higher probability to be backed up through replication, as it takes a long time to read many input files during reproduction of this particular file.
 
-We also observe the implication of system bandwidth for the choice of backup approach.
+We also observe the implication of system bandwidth for the choice of backup method.
 Higher bandwidth improves replication performance more significantly than lineage; thus, other things being equal, the same file is more likely to be backed up through replication on a higher-bandwidth system.
 
 \begin{figure}[ht]
@@ -454,7 +461,7 @@ Higher bandwidth improves replication performance more significantly than lineag
 
 \section{Implementation}
 \label{sec:Impl}
-To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and lineage(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em lineage()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery cost
+To integrate the adaptive backup model into the AMFORA framework, we implemented two backup primitives: replicate() and re-execute(). The {\em replicate()} primitive creates a configurable number of replicas for a file on peer nodes. The {\em re-execute()} primitive records a file's lineage (i.e., the command line used to produce it) in the file's metadata. Also recorded in the file metadata are the file's host address and expected recovery costs
 \kylenote{Is this expected recovery cost for both methods? or just lineage?}. 
 \zhaonote{It is both.}
 The execution engine captures task runtime information such as time-to-solution and I/O size. We also require that it
@@ -494,7 +501,7 @@ file that is generated.
 
 \section{Performance Evaluation}
 \label{sec:Perf}
-We evaluate our approach by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
+We evaluate the adaptive method by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
 \zhaonote{rewrite the previous sentence to make it supercomputer} 
 \katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
 \zhaonote{There is some technical barrier for running AMFORA on supercomputers after BG/P is decommissioned. The NERSC Edison machine does not allow users to use FUSE on compute nodes and so do other Cray ones. BG/Q does not have a full linux kernel yet.}
@@ -537,8 +544,8 @@ The nine stages spans a wide space of many-task applications across dimensions o
 		\includegraphics[width=160mm]{pictures/no-failure.png}
 		\vspace{-10pt}
 		\caption{Montage performance comparison of lineage backup, replication backup, and adaptive backup
-		resilience schemes without node failures during execution, shown as ratios between the time-to-solution 
-		of each resilience scheme against the no-resilience time-to-solution. Bars above the line indicates performance degradation,
+		methods without node failures during execution, shown as ratios between the time-to-solution 
+		of each resilience method against the no-resilience time-to-solution. Bars above the line indicates performance degradation,
 		and bars below the line indicates performance improvements. The numbers underneath the stage labels are the baseline time-to-solution measured in seconds for overall application and each stage.
 		\label{fig:montage}}
   	\end{center}
@@ -548,51 +555,51 @@ In our recovery cost model we specify a network bandwidth ($B$) of 20~MB/s, whic
 
 
 \subsection{Failure-free Backup Overhead}
-We first run a set of experiments to measure costs incurred by our resilience features in the absence of failure.
+We first run a set of experiments to measure costs incurred by our adaptive method in the absence of failure.
 We run the nine stages
-of the Montage application on our target platform using four different system configurations: no-resilience, lineage backup,
+of the Montage application on our target platform using four different system configurations: no-resilience, re-execution backup,
 replication backup (two replicas per file), and adaptive backup.
 Figure~\ref{fig:montage} shows, for each of the latter three cases, the resilience overhead expressed as
 the ratio between its execution time and the no-resilience time.
 
-We see that in the no-failure case, the overhead incurred by the lineage approach is small (just 0.6\%),
+We see that in the failure-free case, the overhead incurred by the re-execution approach is small (just 0.6\%),
 as the only substantial additional work is that of inserting the generating task information into the file metadata.
-The replication scheme introduces a larger overall overhead of 44.0\%, due to the need to replicate the output files
+The replication method introduces a larger overall overhead of 44.0\%, due to the need to replicate the output files
 to two other nodes.
 
-At the individual Montage stage level, the lineage scheme incurs less overhead than the replication scheme in all stages except mImgtbl-1,
+At the individual Montage stage level, the re-execution method incurs less overhead than the replication method in all stages except mImgtbl-1,
 which is just one task that reads all output files from mProject.
-With the replication scheme, mImgtbl-1 takes advantage of the locality of the replicas of the mProject output files.
+With the replication method, mImgtbl-1 takes advantage of the locality of the additional replicas of the mProject output files.
 \kylenote{I dont understand what you mean by take advantage of replica locality?}
 \zhaonote{Let's say mProject has 369 output files, if there is no replication, each node has about 6 files (64 nodes). By replicating the file two additional times, each node will have 18 files. So mImgtbl-1 will have 18 out of 369 files in the local this. Thus it can run faster.}
-In the mBackground stages, the lineage scheme's overhead is significant (12.1\%), because this stage involves many
+In the mBackground stages, the re-execution method's overhead is significant (12.1\%), because this stage involves many
 parallel, short tasks; the many concurrent metadata updates that result can introduce contention on the nodes that host the metadata.
 In contrast, the mProject, mDiffFit, mBackground, and mAdd stages all incur significant overhead when using replication, because they each produce many and/or large output files.
 For example, mDiffFit has over 2000 output files and mAdd has one task that writes one 1.2~GB output file.
 
-The adaptive replication scheme incurs an overall overhead of 2.9\%, which is inbetween the overheads from lineage and replication.
+The adaptive method incurs an overall overhead of 2.9\%, which is in between the overheads from re-execution and replication.
 For the mImgtbl-1, mOverlaps, mConcatFit, mBgModel, mImtbl-2 and mAdd stages, the adaptive
-scheme uses lineage backup.
-mDIffFit runs faster with the adaptive scheme than with replication, since its input files (outputs of mProjectPP) are backed up with replication.
-The mBackground stage runs in a time that is between that of the lineage and replication cases partially because the input files
-were replicated, and the output files are backed up through lineage.
+method uses lineage backup.
+mDIffFit runs faster with the adaptive method than with replication, since its input files (outputs of mProjectPP) are backed up with replication.
+The mBackground stage runs in a time that is between that of the re-execution and replication cases partially because the input files
+were replicated, and the output files are backed up with the re-execution method.
 
 
 \begin{figure}[ht]
         \begin{center}
                 \includegraphics[width=70mm]{pictures/dist}
                 \vspace{-10pt}
-                \caption{Montage output files' positioning in a two dimensional space of replication score and lineage score.
+                \caption{Montage output files' positioning in a two dimensional space of replication score and re-execution score.
                 \label{fig:montage-space}}
         \end{center}
 \end{figure}
 
-Figure~\ref{fig:montage-space} shows the position of all output files in the test case on a two dimensional space of lineage and replication score
+Figure~\ref{fig:montage-space} shows the position of all output files in the test case on a two dimensional space of re-execution and replication score
 \kylenote{cost? We never really define score. I dont mind calling it score but we should make sure that is clear earlier.} 
 \zhaonote{I put a Score definition before Equation 7. It is ``Score'' as it is the linear combination of the expected backup and recovery cost. So there should be ``Lineage Score'' and ``Replication Score'' for each file.}
 calculated with Equation~\ref{EQ:combined}.
-Each point shows a single output file from each Montage stage. The points in the upper left triangle are those where the replication score is lower than the lineage store, 
-while those in the lower right triangle are the files where the lineage score is lower than the replication score.
+Each point shows a single output file from each Montage stage. The points in the upper left triangle are those where the replication score is lower than the re-execution store, 
+while those in the lower right triangle are the files where the re-execution score is lower than the replication score.
 
 \subsection{Recovery Performance}
 To evaluate recovery time, we inject failures during job execution by causing a node to fail (fail-stop) at a specified application stage.
@@ -606,12 +613,12 @@ needs to access the output files of mProject.
 When one of these files is not available, the system must recover that file through either re-execution (based on
 lineage metadata) or by accessing a file replica (if the file replicated).
 
-Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our three backup schemes for those three
+Figure~\ref{fig:montage-fail-mProjectPP} compares the times to solution of our three backup methods for those three
 Montage stages.
-We see that the adaptive and replication schemes perform similarly in stages mImgtbl-1 and mDiffFit,
-as the output files of these two stages are backed up via replication; both also perform better than the lineage scheme.
-The mBackground stage runs faster under the adaptive scheme than in the lineage and replication scheme,
-as all of its tasks benefit from the previously replicated mProject output files and all of its output files are backed up through lineage as shown in Figure~\ref{fig:montage-space}.
+We see that the adaptive and replication methods perform similarly in stages mImgtbl-1 and mDiffFit,
+as the output files of these two stages are backed up via replication; both also perform better than the re-execution method.
+The mBackground stage runs faster under the adaptive method than in the re-execution and replication method,
+as all of its tasks benefit from the previously replicated mProject output files and all of its output files are backed up through the re-execution method as shown in Figure~\ref{fig:montage-space}.
 
 \begin{figure}[ht]
         \begin{center}
@@ -643,30 +650,30 @@ Thus, upon file unavailability, the system recovers the mBackground output file 
         \end{center}
 \end{figure}
 
-Figure~\ref{fig:montage-fail-mBackground} shows the time-to-solution comparison between the three replication schemes. 
-The adaptive scheme achieves similar performance with lineage and replication scheme for mImgtbl-2. 
-This indicates that recovery from lineage recursively and backing up the mImgtbl-2 output file with the same scheme has identical performance to recovery using replication recursively and backing up mImgtbl-2 output files through replication. 
-In fact, the adaptive approaches recovers the input files using lineage for mBackground and using replication for mProject. The mImgtbl-2 output file is backed up through replication.
-The adaptive scheme has significant performance advantages for the mAdd stage.
-It again achieves recursive recovery via lineage for mBackground and replication for mProject,
+Figure~\ref{fig:montage-fail-mBackground} shows the time-to-solution comparison between the three replication methods. 
+The adaptive method achieves similar performance with re-execution and replication method for mImgtbl-2. 
+This indicates that recovery from re-execution recursively and backing up the mImgtbl-2 output file with the same method has identical performance to recovery using replication recursively and backing up mImgtbl-2 output files through replication. 
+In fact, the adaptive method recovers the input files using re-exeuction for mBackground and using replication for mProject. The mImgtbl-2 output file is backed up through replication.
+The adaptive method has significant performance advantages for the mAdd stage.
+It again achieves recursive recovery via re-execution for mBackground and replication for mProject,
 but chooses to replicate the mAdd output file using lineage, which in turn results in better time-to-solution.
 
 
 
 \subsection{Impact of Optimization Weight}
 \label{sec:Perf:Weight}
-We use the output files of all stages of the Montage test case to evaluate how the optimization weight parameter $\alpha$ impacts the behavior of our adaptive algorithm. %\kylenote{scheme or algorithm?} \katznote{In American English, a scheme always has negative connotations though I recognize that this is not the case in British (and apparently NZ English).} 
+We use the output files of all stages of the Montage test case to evaluate how the optimization weight parameter $\alpha$ impacts the behavior of our adaptive method. %\kylenote{scheme or algorithm?} \katznote{In American English, a scheme always has negative connotations though I recognize that this is not the case in British (and apparently NZ English).} 
 We fix all parameters in the system except $\alpha$, which we set variously to be 0.1, 0.5, and 0.9, indicating the user's concern with optimizing the failure-free run time.
 
 
-Figure~\ref{fig:weight} shows our results. We see that as $\alpha$ increases, files move from the upper left triangle to the lower right triangle, with the result that the failure-free run time is shorter since more files are backed up through lineage.
+Figure~\ref{fig:weight} shows the results. We see that as $\alpha$ increases, files move from the upper left triangle to the lower right triangle, with the result that the failure-free run time is shorter since more files are backed up through the re-execution method.
 This result exactly matches the user's optimization goal of minimizing failure-free running time.
 
 \begin{figure*}[ht]
 	\begin{center}
 		\includegraphics[width=160mm]{pictures/weight}
 		\vspace{-10pt}
-		\caption{Backup decision making when varying the optimization weight. Files in the upper left triangle are backed up through replication and files in the lower right triangle are backed up through lineage.
+		\caption{Backup decision making when varying the optimization weight. Files in the upper left triangle are backed up through replication and files in the lower right triangle are backed up through re-execution.
 		\label{fig:weight}}
   	\end{center}
 \end{figure*}
@@ -691,19 +698,19 @@ We see that unless $P$ is quite large, data and metadata copy costs dominate,
 %
 %\katznote{should this be part of the previous paragraph?}
 %\zhaonote{yes, done}
-and the lineage score and replication score have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
+and the re-execution score and replication score have a simpler form than in Equation~\ref{EQ:spatial} and ~\ref{EQ:temporal}
 %\iannote{What do you mean ``now"? And simpler than what? Why?}\zhaonote{simpler than Equation 5 and 6, since we eliminate the part with $P$ because $P$'s impact is limited}:
 \begin{itemize}
   \item[] $S_{repl} = \alpha\frac{|y|}{B}(r-1) + (1-\alpha)\frac{|y|}{B} $
   \item[] $S_{line} = \alpha\frac{|M_y|}{B}(r-1) + (1-\alpha)T$
 \end{itemize}
 
-We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
+We also consider a second question, namely, how does the adaptive method respond to varying numbers of input files?
 For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} 
 \zhaonote{yes, let's do it. Kyle, would like to the editing?}
 determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
 The answer is yes.
-Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
+Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive method is more likely to replicate the data.
 
 
 
@@ -735,10 +742,10 @@ While these approaches to fault tolerance have been successfully applied in a nu
 
 \section{Conclusion and Future Work}
 \label{sec:Con}
-We have proposed a new approach to fault-tolerant distributed computation suitable for the increasingly important class of parallel applications composed of small tasks linked by data flows when using parallel scripting frameworks with transient in-memory file systems. %\zhaonote{some more text in the previous sentence}
-The core of our approach is a mathematical model of backup and recovery costs, which we leverage to make runtime decisions about how and when to replicate data and metadata. This model, which permits online comparison of the cost of replicating data via either re-execution or access to replicas, takes as input only input file size, output file size, number of replicas, task time-to-solution, network bandwidth, and failure rate.
+We have proposed a new method to fault-tolerant distributed computation suitable for the increasingly important class of parallel applications composed of small tasks linked by data flows when using parallel scripting frameworks with transient in-memory file systems. %\zhaonote{some more text in the previous sentence}
+The core of our method is a mathematical model of backup and recovery costs, which we leverage to make runtime decisions about how and when to replicate data and metadata. This model, which permits online comparison of the cost of replicating data via either re-execution or access to replicas, takes as input only input file size, output file size, number of replicas, task time-to-solution, network bandwidth, and failure rate.
 We implemented the model in a parallel scripting framework and presented performance results for an astronomy image processing application, Montage.
-These results show that our adaptive scheme can recover from failure more efficiently in the case of failure than other methods, while introducing only 2.9\% overhead when there are no failures. We also investigated the sensitivity of our model to failure rate, a notoriously inaccurate parameter. We find that for our target application (and, we expect, for many other similar applications), backup decisions are relatively insensitive to failure rate in practice.
+These results show that our adaptive method can recover from failure more efficiently in the case of failure than other methods, while introducing only 2.9\% overhead when there are no failures. We also investigated the sensitivity of our model to failure rate, a notoriously inaccurate parameter. We find that for our target application (and, we expect, for many other similar applications), backup decisions are relatively insensitive to failure rate in practice.
 
 Our configurable model permits users to express their preferences regarding the relative weight to be given to re-execution vs.\ access to cached data as a recovery strategy,
 and thus the time spent on data replication vs.\ metadata storage. Such preferences may be used to express, for example, the user's expected failure rates, their interest
