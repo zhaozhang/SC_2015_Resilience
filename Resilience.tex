@@ -120,8 +120,8 @@ environment comprised of multiple nodes, each of which can independently store d
 Our resilience mechanisms aim to enable continued (and uninterrupted) application execution in the presence of node failures. 
 Importantly, we aim to minimize overhead in the failure-free case while providing rapid recovery in the presence of a failure.
 
-\kylenote{Could delete the following paragraph?}
-In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. These works all view the computation as a long-running parallel task and use a fixed checkpointing interval throughout. 
+\kylenote{Could delete the following paragraph?} \katznote{I think it's needed}
+In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. They all view the computation as a long-running parallel task that must be periodically checkpointed. 
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
 Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
 
@@ -152,10 +152,11 @@ Our experiments show that when emulating a supercomputer with 64 m3.large Amazon
 
 
 \kylenote{Could these assumptions come later?}
-In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true in the context of a supercomputer where there is no local disk.\zhaonote{add more words to previous sentence to make it supercomputer}  We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
+In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true in the context of a supercomputer where there is no local disk.\zhaonote{add more words to previous sentence to make it supercomputer}  \katznote{future supercomputers, as well as some past ones, have had local disk} We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
 
-The contribution of this work is the use of a general adaptive mathematical model for making dynamic backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?} decisions and our evaluation of this model in a practical setting.
+The contribution of this work is the use of a general adaptive mathematical model for making dynamic recovery %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
+decisions and our evaluation of this model in a practical setting.
 The model is applicable to a broad range of applications running on clouds, clusters, and supercomputers. We also show that node failure rate is irrelevant to backup choice decision in practice.
 
 
@@ -319,7 +320,7 @@ Term & Meaning \\ \hline
 
 
 \subsection{Backup Cost}
-\kylenote{we seem to flip flop between calling it re-execution or lineage. I vote for re-execution and talk about that based on lineage metadata as you do here}
+\kylenote{we seem to flip flop between calling it re-execution or lineage. I vote for re-execution and talk about that based on lineage metadata as you do here} \katznote{agreed}
 A file can be recovered either by retrieving a replica or through re-execution based on its lineage metadata.  To create $r$ replicas of a file or its lineage, $r-1$ additional copies are needed.  The time required to synchronously create the $r-1$ replicas of a file $y$ to memory is as follows:
 
 \begin{equation}
@@ -365,7 +366,7 @@ As $P^r$ is small, we can replace it with $0$ to obtain the following closed for
 E_{repl}(y) \approx \frac{|y|}{B}+\frac{P}{1-P}timeout
 \label{EQ:spatial}
 \end{equation}
-\kylenote{this is the first time spatial appears - might be worth explaining or calling it spatial and temporal replication throughout. }
+%\kylenote{this is the first time spatial appears - might be worth explaining or calling it spatial and temporal replication throughout. }
 Equation~\ref{EQ:spatial} defines the replication recovery cost for an output file $y$ to be approximately 
 equal to the time required to transfer the file plus the time required to switch to the replica
 in the case of failure, where the likelihood of needing to use the replica is based on the rate of failure $P$
@@ -424,7 +425,8 @@ The term $\alpha$ in Equation~\ref{EQ:combined} is a weight, which the user can 
 That means that execution will optimize the backup cost over recovery cost. In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
-\kylenote{I'm not sure if this section adds a lot, I'm not sure if the discussion is based on what you think? or are we forward referencing results? I would vote to remove (although the picture is nice).}
+%\kylenote{I'm not sure if this section adds a lot, I'm not sure if the discussion is based on what you think? or are we forward referencing results? I would vote to remove (although the picture is nice).}
+%\katznote{I think this makes sense to keep - it explores the equations we just presented.}
 We next discuss how task and system parameters impact the choice of backup approach.
 The four example tasks in Figure~\ref{fig:taxonomy} vary in their computation time, I/O size, and number of input files. If we control the comparison by varying only one factor, we see some trends about backup decisions.
 An output file produced by a longer-running task will tend to be backed up by replication because the cost of regenerating the file by re-executing the task will be large.
@@ -486,7 +488,7 @@ file that is generated.
 \section{Performance Evaluation}
 \label{sec:Perf}
 We evaluate our approach by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
-\zhaonote{rewrite the previous sentence to make it supercomputer}
+\zhaonote{rewrite the previous sentence to make it supercomputer} \katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
 
 The Montage test case is a 3x3 degree image mosaic of 2MASS data centered at Galaxy m101. 
 The application has 369 initial input files (raw images) and one final output file (mosaic). 
@@ -495,9 +497,9 @@ The mProject, mDiffFit, and mBackground stages have multiple tasks.
 The mImgtbl, mConcatFit, and mAdd stages have a single task but a large number of input files. 
 Table~\ref{tb:montage-stats} summarizes the basic statistics of each stage of the Montage test case.
 
-The Montage application can also be viewed as eight independent applications that each have different computation and I/O distribution. 
+The Montage application can also be viewed as eight independent applications that each have different computation and I/O properties. 
 The nine stages spans a wide space of many-task applications across dimensions of relative data/computation intensiveness and parallelism (single task stage and distributed stage).
-\zhaonote{add previous paragraph to argue the coverage of Montage}
+%\zhaonote{add previous paragraph to argue the coverage of Montage}
 
 \begin{table*}[ht]
 \begin{center}
@@ -639,7 +641,7 @@ but chooses to replicate the mAdd output file using lineage, which in turn resul
 
 \subsection{Impact of Optimization Weight}
 \label{sec:Perf:Weight}
-We use the output files of all stages of the Montage test case to evaluate how the optimization weight parameter $\alpha$ impacts the behavior of our adaptive algorithm\kylenote{scheme or algorithm?}.
+We use the output files of all stages of the Montage test case to evaluate how the optimization weight parameter $\alpha$ impacts the behavior of our adaptive algorithm. %\kylenote{scheme or algorithm?} \katznote{In American English, a scheme always has negative connotations though I recognize that this is not the case in British (and apparently NZ English).} 
 We fix all parameters in the system except $\alpha$, which we set variously to be 0.1, 0.5, and 0.9, indicating the user's concern with optimizing the failure-free run time.
 
 
@@ -680,7 +682,7 @@ and the lineage score and replication score have a simpler form than in Equation
 \end{itemize}
 
 We also consider a second question, namely, how does the adaptive model respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model\kylenote{We change between model, scheme, algorithm throughout} \katznote{can we use method for the overall idea, model for a numerical model of the method, and algorithm for the specific algorithm we pick?  and not use scheme, as it has a somewhat negative connotation in American English?} determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
 The answer is yes.
 Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through lineage than that of {\em task 1}; thus, the adaptive scheme is more likely to replicate the data.
 
@@ -691,9 +693,11 @@ Our computation of a task's time-to-solution $T$ includes three parts: input acc
 \label{sec:Related}
 Fault tolerant resilience models have been explored in small-scale applications for single-threaded applications on individual PCs~\cite{condor1988, libckpt1994}, large-scale distributed workflows~\cite{uncoordinated2010}, and parallel and HPC computing applications~\cite{mist1995, consistent1994,FTworkshop2009}, among others. In  general, most resilience approaches rely on some form of data replication, either explicitly via replicating intermediate files or implicitly via checkpointing application state.
 
-Replication of intermediate files is often the easiest approach for building resilient applications. Such algorithms can be employed trivially by an execution framework or file system without requiring application modification. Replication techniques are also used to enhance scalability and performance. While specific goals may differ, the replication techniques applied are similar. A brief summary of replication techniques in distributed storage environments is presented in a survey~\cite{survey2012}. Replication techniques are often classified as either static or dynamic. In static configurations a set number of replicas and hosts are chosen at the start of the application lifecycle and are then used throughout execution. In a dynamic model these parameters are changed depending on access patterns, storage capacity, and bandwidth.  Dynamic models often employ a decentralized architecture in which replicas are distributed over a peer-to-peer network~\cite{chord} and decentralized decision mechanisms are used to place and access replicas. Replication techniques have been used for decades in distributed file systems such as the classic RAID~\cite{raid1988} and more recently HDFS~\cite{HDFS} and RAMCloud~\cite{ramcloud2010, ramcloud2014} to replicate files over a distributed collection of nodes. \zhaonote{add one sentense}The adaptive approach we present in this paper suits for a different environment where there are massive amount of compute node without local disks.
+Replication of intermediate files is often the easiest approach for building resilient applications. Such algorithms can be employed trivially by an execution framework or file system without requiring application modification. Replication techniques are also used to enhance scalability and performance. While specific goals may differ, the replication techniques applied are similar. A brief summary of replication techniques in distributed storage environments is presented in a survey~\cite{survey2012}. Replication techniques are often classified as either static or dynamic. In static configurations a set number of replicas and hosts are chosen at the start of the application lifecycle and are then used throughout execution. In a dynamic model these parameters are changed depending on access patterns, storage capacity, and bandwidth.  Dynamic models often employ a decentralized architecture in which replicas are distributed over a peer-to-peer network~\cite{chord} and decentralized decision mechanisms are used to place and access replicas. Replication techniques have been used for decades in distributed file systems such as the classic RAID~\cite{raid1988} and more recently HDFS~\cite{HDFS} and RAMCloud~\cite{ramcloud2010, ramcloud2014} to replicate files over a distributed collection of nodes. %\zhaonote{add one sentence}
+The adaptive approach we present in this paper is more suitable for a different type of environment, with large numbers of diskless compute nodes.
 
-Lineage strategies have been explored in scientific workflows~\cite{ramakrishnan09vgrads, calheiros13deadlines, Chimera2002} as well as in distributed computing framework such as Spark~\cite{RDD2012}. Most often, lineage in scientific workflows is motivated by the need to meet deadlines and therefore focuses on concurrent task replication. Thus, tasks are actively replicated on several nodes concurrently and the first result is taken. For example, in the VGrADS project~\cite{ramakrishnan09vgrads}, tasks are selectively replicated based on resource reliability and application performance models. Similar techniques are used in volunteer computing projects~\cite{boinc04} to establish consensus among several potentially untrusted sources. Spark, a data processing engine designed for processing Hadoop data, analyzes a task's \emph{lineage graph}---the operations used to build it---in order to reexecute entire tasks without requiring replication. This approach is particularly advantageous in the Spark context as individual tasks are short (50-200~ms) stream-based computations. \zhaonote{add one sentense} While the many-task applications running time and I/O amount can be highly irregular, so that no single approach can be the best solution.
+Lineage strategies have been explored in scientific workflows~\cite{ramakrishnan09vgrads, calheiros13deadlines, Chimera2002} as well as in distributed computing framework such as Spark~\cite{RDD2012}. Most often, lineage in scientific workflows is motivated by the need to meet deadlines and therefore focuses on concurrent task replication. Thus, tasks are actively replicated on several nodes concurrently and the first result is taken. For example, in the VGrADS project~\cite{ramakrishnan09vgrads}, tasks are selectively replicated based on resource reliability and application performance models. Similar techniques are used in volunteer computing projects~\cite{boinc04} to establish consensus among several potentially untrusted sources. Spark, a data processing engine designed for processing Hadoop data, analyzes a task's \emph{lineage graph}---the operations used to build it---in order to reexecute entire tasks without requiring replication. This approach is particularly advantageous in the Spark context as individual tasks are short (50-200~ms) stream-based computations. %\zhaonote{add one sentence}
+For many-task applications, run time and I/O amount can be highly irregular, so no single approach will always be the best solution.
 
 Replication strategies have also been used to compute in the presence of faults, such as in algorithm-based fault tolerance (ABFT)~\cite{abft}, where checksums are used to limit the memory used to replicate.  Later work~\cite{turmon1, turmon2, gunnels} introduced the idea of using the checksums to detect faults, then using a lineage-like reexecution at various levels, from a function call, to an iteration within a function, to backup.
 
@@ -712,7 +716,7 @@ While these approaches to fault tolerance have been successfully applied in a nu
 
 \section{Conclusion and Future Work}
 \label{sec:Con}
-We have proposed a new approach to fault-tolerant distributed computation suitable for the increasingly important class of parallel applications composed of small tasks linked by data flows when using parallel scripting frameworks with transient in-memory file systems.\zhaonote{some more text in the previous sentence}
+We have proposed a new approach to fault-tolerant distributed computation suitable for the increasingly important class of parallel applications composed of small tasks linked by data flows when using parallel scripting frameworks with transient in-memory file systems. %\zhaonote{some more text in the previous sentence}
 The core of our approach is a mathematical model of backup and recovery costs, which we leverage to make runtime decisions about how and when to replicate data and metadata. This model, which permits online comparison of the cost of replicating data via either re-execution or access to replicas, takes as input only input file size, output file size, number of replicas, task time-to-solution, network bandwidth, and failure rate.
 We implemented the model in a parallel scripting framework and presented performance results for an astronomy image processing application, Montage.
 These results show that our adaptive scheme can recover from failure more efficiently in the case of failure than other methods, while introducing only 2.9\% overhead when there are no failures. We also investigated the sensitivity of our model to failure rate, a notoriously inaccurate parameter. We find that for our target application (and, we expect, for many other similar applications), backup decisions are relatively insensitive to failure rate in practice.
