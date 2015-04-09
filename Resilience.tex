@@ -108,13 +108,13 @@ We also discover that, at least for this application, backup decisions are relat
 \end{abstract}
 
 \section{Introduction}
-\zhaonote{the overall tone of this paper is about unreliable distributed computing platforms, I will make it more supercomputer, and declare we are emulating a supercomputer with Amazon EC2.}
+%\zhaonote{the overall tone of this paper is about unreliable distributed computing platforms, I will make it more supercomputer, and declare we are emulating a supercomputer with Amazon EC2.}
 %\{test}
 Distributed computing applications have long strived to %provide system resilience in the presence of 
 be resilient to 
 unreliable computing nodes. As applications scale to thousands and tens of thousands of 
 compute nodes, the likelihood of a single node failing during execution increases proportionally~\cite{gfs2003, exaroadmap2011}. 
-\zhaonote{below is new text to shape the platform as a supercomputer, and declare what we are doing, and the goals}
+%\zhaonote{below is new text to shape the platform as a supercomputer, and declare what we are doing, and the goals}
 We seek to build a resilient parallel scripting framework to enable many-task applications on computing platforms such as supercomputers. We model such platforms as an execution 
 environment comprised of multiple nodes, each of which can independently store data. Nodes are unreliable; if a node fails, the data that it stores is lost. 
 Our resilience mechanisms aim to enable continued (and uninterrupted) application execution in the presence of node failures. 
@@ -122,7 +122,7 @@ Importantly, we aim to minimize overhead in the failure-free case while providin
 
 \kylenote{Could delete the following paragraph?} \katznote{I think it's needed}
 \zhaonote{yes, the short and many task abstraction is the reason why we can give up on the checkpointing method.}
-In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. They all view the computation as a long-running parallel task that must be periodically checkpointed. 
+In parallel computing, much previous research has focused on checkpointing process states to stable storage in order to tolerate failures. \katznote{however, as Kyle points out, the part after this could be moved to related work} Researchers have investigated, for example, the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}. They all view the computation as a long-running parallel task that must be periodically checkpointed. 
 Upon failure, the processes halt execution, reach a consensus, roll back to the checkpoint, and then resume execution. 
 Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time to solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
 
@@ -151,18 +151,16 @@ a parallel scripting framework for scientific computing, and evaluate its perfor
 Our experiments show that when emulating a supercomputer with 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
 %The experiment of PageRank of GraphX on the Twitter dataset shows \zhaonote{need to update the number}
 
-
-\kylenote{Could these assumptions come later?}
-In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true in the context of a supercomputer where there is no local disk.\zhaonote{add more words to previous sentence to make it supercomputer} 
-\katznote{future supercomputers, as well as some past ones, have had local disk} 
-\zhaonote{shall I say ``in the case of there is no local disk'', if there is local disk, someone may challenge why do not use asynchronous replication to disk since disk failure is rear?}
+\kylenote{Could these assumptions come later?} \katznote{perhaps could be moved to the start of Section 3}
+In this paper, we assume the network that connects nodes has a uniform bandwidth and latency to simplify the discussion; we later show that this works reasonably well in practice.  In the case of node failure, we assume that the data stored in that node is not accessible, which is true for the case of a supercomputer where there is no local disk.
+%\zhaonote{add more words to previous sentence to make it supercomputer} 
+%\katznote{future supercomputers, as well as some past ones, have had local disk} 
+%\zhaonote{shall I say ``in the case of there is no local disk'', if there is local disk, someone may challenge why do not use asynchronous replication to disk since disk failure is rare?}
 We assume lineage information gathering and data replication are synchronous. To simplify the discussion, we also assume that all nodes share a common, consistent failure rate and failures are uncorrelated. However, we later show that the failure has little impact on the adaptive backup model in Section~\ref{sec:Perf:Failure}. 
 
-
-The contribution of this work is the use of a general adaptive mathematical model for making dynamic resilience \zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
+The contribution of this work is the use of a general adaptive mathematical model for making dynamic resilience %\zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
 decisions and our evaluation of this model in a practical setting.
 The model is applicable to a broad range of applications running on clouds, clusters, and supercomputers. We also show that node failure rate is irrelevant to backup choice decision in practice.
-
 
 The rest of paper is organized as follows:
 Section~\ref{sec:background} briefly introduces Montage and AMFORA, including AMFORA's architecture, programming model and data management.
@@ -428,11 +426,11 @@ The term $\alpha$ in Equation~\ref{EQ:combined} is a weight, which the user can 
  If the user's optimization goal is backup cost, users can specify $\alpha$ close to 1
 That means that execution will optimize the backup cost over recovery cost. 
 During execution, the system will always select the backup method with lower backup cost, thus minimizing the failure-free overhead.
-\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
+%\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
 In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. 
 The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. 
 So the system will always prefer to optimize the performance with the presence of failures.
-\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$}
+\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$} \katznote{I don't understand the previous sentence}
 Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
@@ -501,10 +499,10 @@ file that is generated.
 
 \section{Performance Evaluation}
 \label{sec:Perf}
-We evaluate the adaptive method by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory. 
-\zhaonote{rewrite the previous sentence to make it supercomputer} 
-\katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
-\zhaonote{There is some technical barrier for running AMFORA on supercomputers after BG/P is decommissioned. The NERSC Edison machine does not allow users to use FUSE on compute nodes and so do other Cray ones. BG/Q does not have a full linux kernel yet.}
+We evaluate the adaptive method by emulating a supercomputer environment with an Amazon EC2 cluster of 64 m3.large instances, each equipped with 2 Intel Xeon E5-2670 vCPUs and 7.5~GB memory.  (Note: we use Amazon as a cluster because that there are technical barriers to performing our evaluation on many supercomputers: Cray systems do not allow users to use FUSE on compute nodes, and BG/Q systems do not have a full Linux kernel.)
+%\zhaonote{rewrite the previous sentence to make it supercomputer} 
+%\katznote{not sure this is really helpful - reviewers might ask why not just use 64 nodes of a real supercomputer}
+%\zhaonote{There is some technical barrier for running AMFORA on supercomputers after BG/P is decommissioned. The NERSC Edison machine does not allow users to use FUSE on compute nodes and so do other Cray ones. BG/Q does not have a full linux kernel yet.}
 
 The Montage test case is a 3x3 degree image mosaic of 2MASS data centered at Galaxy m101. 
 The application has 369 initial input files (raw images) and one final output file (mosaic). 
@@ -690,9 +688,9 @@ Given a customized allocation size
 and hardware/software stack, it can be difficult for a user to convert these metrics to accurate MTTFs for a particular execution.
 
 Surprisingly, the adaptive backup decisions remain the same under all five failure rate configurations of $P=\{\frac{1}{12}, \frac{1}{120},$ 
-$\frac{1}{1200}, \frac{1}{12000}, \frac{1}{120000}\}$
-\kylenote{what are these 5 configs?}
-, which implies that the failure rate is irrelevant to the adaptive backup decision, at least for this application.
+$\frac{1}{1200}, \frac{1}{12000}, \frac{1}{120000}\}$,
+%\kylenote{what are these 5 configs?}
+which implies that the failure rate is irrelevant to the adaptive backup decision, at least for this application.
 The reason for this lack of sensitivity to $P$ becomes clear when we look at Equations~\ref{EQ:spatial} and \ref{EQ:temporal}.
 We see that unless $P$ is quite large, data and metadata copy costs dominate,
 %
