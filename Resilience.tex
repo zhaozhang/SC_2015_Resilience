@@ -414,7 +414,7 @@ the cost of updating file metadata with the information needed to re-execute the
 \subsubsection{Combining Backup and Recovery Cost}
 To simplify our discussion, we assume a task writes its output files first to local cache, then backs up the files synchronously with the specified technique. Thus the total time taken by a task is the sum of three parts:
 {\bf T}: task execution time, including computation and I/O cost,
-{\bf U}: time to backup the output file,\kylenote{Would it be clearer to say backup the output file or lineage metadata?}
+{\bf U}: time to backup the output file or lineage metadata,\kylenote{Would it be clearer to say backup the output file or lineage metadata?}\zhaonote{fixed}
 and {\bf E}: expected cost to recover the output file.\kylenote{Is the expected cost to recover the output part of the time?}
 
 To take both the backup cost and expected recovery cost into account, we use a linear combination of {\bf U} and {\bf E}, which we call % as the indicator score\iannote{A phrase that is unfamiliar to me.} 
@@ -426,6 +426,7 @@ S=\alpha*U+(1-\alpha)*E
 %
 For every output file, we evaluate the total cost with both re-execution and replication as the backup choice, and use the one with the lower total cost.
 \kylenote{This first sentence seems wrong, we choose the method based on the ratio? If recovery cost is favored we could end up using the backup choice with greater cost?} 
+\zhaonote{Yes, that is correct. We compute $S_{replication}$ and $S_{re-execution}$, and choose the method with lower score. Let's say if a user favors recovery cost, it may end up in the situation where the failure-free time-to-solution is longer. But it is ok, all we guarantee in that case is that if there is a failure, we recover faster. The model is actually a tradeoff between failure-free performance and failure-present performance.}
 The term $\alpha$ in Equation~\ref{EQ:combined} is a weight, which the user can set to between 0 and 1. 
  If the user's optimization goal is backup cost, users can specify $\alpha$ close to 1
 That means that execution will optimize the backup cost over recovery cost. 
@@ -758,13 +759,14 @@ We also plan to investigate a wider range of applications, explore extensions to
 and examine the use of asynchronous replication and hierarchical storage.
 
 \section{Acknowledgments}
-\katznote{anything about funding sponsors to add?}
+\katznote{anything about funding sponsors to add?}\zhaonote{yes, I put in the AMPLab one, and still waiting for the BIDS one}
 Work by Katz was supported by the National
 Science Foundation while working at the Foundation.  Any opinion, finding, and
 conclusions or recommendations expressed in this material are those of the
 author(s) and do not necessarily reflect the views of the National Science
 Foundation.
 
+Work by Zhao is supported in part by NSF CISE Expeditions Award CCF-1139158, LBNL Award 7076018, and DARPA XData Award FA8750-12-2-0331, and gifts from Amazon Web Services, Google, SAP,  The Thomas and Stacey Siebel Foundation, Adatao, Adobe, Apple, Inc., Blue Goji, Bosch, C3Energy, Cisco, Cray, Cloudera, EMC, Ericsson, Facebook, Guavus, Huawei, Intel, Microsoft, NetApp, Pivotal, Samsung, Splunk, Virdata, VMware, and Yahoo!. Author FAN is supported by a National Science Foundation Graduate Research Fellowship.
 \bibliographystyle{abbrv}
 \bibliography{Resilience}
 
