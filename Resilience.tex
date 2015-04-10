@@ -278,9 +278,9 @@ small in many-task applications~\cite{MTC-Bluewaters}.
 
 
 
-\section{Adaptive Backup Model}
+\section{Adaptive Backup and Recovery Model}
 \label{sec:Model}
-\kylenote{Should this section be called adaptive backup and recovery model?}
+%\kylenote{Should this section be called adaptive backup and recovery model?}
 
 Our resilience method builds on an analytical model that relates the costs of backup and recovery to system parameters
 such as communication cost and failure rate.
@@ -434,9 +434,9 @@ During execution, the system will always select the backup method with lower bac
 In contrast, if the user's optimization goal is recovery cost, $\alpha$ should be specified close to 0. 
 The system make backup decisions to optimize the expected recovery cost since the chance of failure is high. 
 %So the system will always prefer to optimize the performance with the presence of failures.
-\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$} 
-\katznote{I don't understand the previous sentence}
-\zhaonote{I removed that sentence, it says the something as its previous.}
+%\zhaonote{add one sentence to explain what it means for application with the weight $\alpha$} 
+%\katznote{I don't understand the previous sentence}
+%\zhaonote{I removed that sentence, it says the something as its previous.}
 Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimization weight on adaptive backup decision making. 
 
 \subsubsection{Discussion}
@@ -647,7 +647,7 @@ Thus, upon file unavailability, the system recovers the mBackground output file 
         \begin{center}
                 \includegraphics[width=75mm]{pictures/kill-mBack}
                 \vspace{-10pt}
-                \caption{\kylenote{The graphs have lineage rather than re-execution.}Recovery performance of mImgtbl and mAdd due to a node failure occurred right after mBackground finishes and before mImgtbl starts
+                \caption{Recovery performance of mImgtbl and mAdd due to a node failure occurred right after mBackground finishes and before mImgtbl starts
                 \label{fig:montage-fail-mBackground}}
         \end{center}
 \end{figure}
@@ -756,6 +756,14 @@ In future work, we plan to integrate this adaptive backup model with the Berkele
 the graph processing framework GraphX~\cite{graphx2014} and the memory centric storage system Tachyon~\cite{tachyon2014}.
 We also plan to investigate a wider range of applications, explore extensions to incorporate other constraints such as limited backup storage,
 and examine the use of asynchronous replication and hierarchical storage.
+
+\section{Acknowledgments}
+\katznote{anything about funding sponsors to add?}
+Work by Katz was supported by the National
+Science Foundation while working at the Foundation.  Any opinion, finding, and
+conclusions or recommendations expressed in this material are those of the
+author(s) and do not necessarily reflect the views of the National Science
+Foundation.
 
 \bibliographystyle{abbrv}
 \bibliography{Resilience}
