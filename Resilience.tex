@@ -62,7 +62,7 @@
 %for single author (just remove % characters)
 \author{
 \begin{tabular}{cccc}
-{Zhao Zhang\textsuperscript{*}} & {Daniel S. Katz\textsuperscript{+}} & {Haoyuan Li\textsuperscript{*}} & {Kyle Chard\textsuperscript{+}} 
+{Zhao Zhang\textsuperscript{*,\#}} & {Daniel S. Katz\textsuperscript{+}} & {Haoyuan Li\textsuperscript{*}} & {Kyle Chard\textsuperscript{+}} 
 \end{tabular}
 \\
 \begin{tabular}{ccc}
@@ -72,6 +72,7 @@
 \and % use '\and' if you need 'another row' of author names
 \begin{tabular}{c}
 \textsuperscript{*}AMPLab, University of California, Berkeley \\
+\textsuperscript{\#}Berkeley Institute for Data Science (BIDS), University of California, Berkeley \\
 \textsuperscript{+}Computation Institute, University of Chicago \& Argonne National Laboratory
 \end{tabular}
 } 
@@ -572,9 +573,9 @@ to two other nodes.
 
 At the individual Montage stage level, the re-execution method incurs less overhead than the replication method in all stages except mImgtbl-1,
 which is just one task that reads all output files from mProject.
-With the replication method, mImgtbl-1 takes advantage of the locality of the additional replicas of the mProject output files.
-\kylenote{I dont understand what you mean by take advantage of replica locality?}
-\zhaonote{Let's say mProject has 369 output files, if there is no replication, each node has about 6 files (64 nodes). By replicating the file two additional times, each node will have 18 files. So mImgtbl-1 will have 18 out of 369 files in the local this. Thus it can run faster.}
+With the replication method, mImgtbl-1 takes advantage of fact that some of the additional replicas of the mProject output files are local and don't need to be transferred.
+%\kylenote{I dont understand what you mean by take advantage of replica locality?}
+%\zhaonote{Let's say mProject has 369 output files, if there is no replication, each node has about 6 files (64 nodes). By replicating the file two additional times, each node will have 18 files. So mImgtbl-1 will have 18 out of 369 files in the local this. Thus it can run faster.}
 In the mBackground stages, the re-execution method's overhead is significant (12.1\%), because this stage involves many
 parallel, short tasks; the many concurrent metadata updates that result can introduce contention on the nodes that host the metadata.
 In contrast, the mProject, mDiffFit, mBackground, and mAdd stages all incur significant overhead when using replication, because they each produce many and/or large output files.
@@ -676,7 +677,7 @@ This result exactly matches the user's optimization goal of minimizing failure-f
 	\begin{center}
 		\includegraphics[width=160mm]{pictures/weight}
 		\vspace{-10pt}
-		\caption{Backup decision making when varying the optimization weight. Files in the upper left triangle are backed up through replication and files in the lower right triangle are backed up through re-execution.
+		\caption{Backup decisions at different optimization weights. Files in the upper left triangles are backed up through replication and files in the lower right triangles are backed up through re-execution.
 		\label{fig:weight}}
   	\end{center}
 \end{figure*}
@@ -760,11 +761,12 @@ and examine the use of asynchronous replication and hierarchical storage.
 
 \section{Acknowledgments}
 \katznote{anything else about funding sponsors to add?}
-The AMPLab is supported in part by NSF CISE Expeditions Award CCF-1139158, LBNL Award 7076018, and DARPA XData Award FA8750-12-2-0331, and gifts from Amazon Web Services, Google, SAP,  The Thomas and Stacey Siebel Foundation, Adatao, Adobe, Apple, Inc., Blue Goji, Bosch, C3Energy, Cisco, Cray, Cloudera, EMC, Ericsson, Facebook, Guavus, Huawei, Intel, Microsoft, NetApp, Pivotal, Samsung, Splunk, Virdata, VMware, and Yahoo!. \katznote{are all of these active supporters of work done in this paper?  If not, can we remove some of them? - not a big deal either way}
-\zhaonote{Unfortunately, all these sponsors have to be listed in the ack. }
+The AMPLab is supported in part by NSF CISE Expeditions Award CCF-1139158, LBNL Award 7076018, and DARPA XData Award FA8750-12-2-0331, and gifts from Amazon Web Services, Google, SAP,  The Thomas and Stacey Siebel Foundation, Adatao, Adobe, Apple, Inc., Blue Goji, Bosch, C3Energy, Cisco, Cray, Cloudera, EMC, Ericsson, Facebook, Guavus, Huawei, Intel, Microsoft, NetApp, Pivotal, Samsung, Splunk, Virdata, VMware, and Yahoo!. 
+%\katznote{are all of these active supporters of work done in this paper?  If not, can we remove some of them? - not a big deal either way}
+%\zhaonote{Unfortunately, all these sponsors have to be listed in the ack. }
 
-Work by Zhao is also supported by the Berkeley Institute for Data Science (BIDS), through funding from ... \katznote{just whatever is needed about your funding, probably Moore and Sloan...}
-\zhaonote{yes, I am waiting of the official BIDS ack. It has been a week since I ask them last time. should be ready soon.}
+The Berkeley Institute for Data Science (BIDS) is  supported by ... \katznote{Need to add another footnote to some of the authors to indicate those who are supported by BIDS, as I did for Zhao.} 
+
 
 Work by Katz was supported by the National
 Science Foundation while working at the Foundation.  Any opinion, finding, and
