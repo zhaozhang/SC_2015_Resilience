@@ -152,8 +152,8 @@ a parallel scripting framework for scientific computing, and evaluate its perfor
 Our experiments show that when emulating a supercomputer using 64 m3.large Amazon EC2 instances, the adaptive model recovers up to 57\% faster than a purely re-execution or replication approach, and introduces only 2.9\% of failure-free overhead. %when compared to no backups.
 %The experiment of PageRank of GraphX on the Twitter dataset shows \zhaonote{need to update the number}
 
-The contribution of this work is the use of a general adaptive mathematical model for making dynamic resilience %\zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
-decisions and our evaluation of this model in a practical setting.
+The contributions of this work are the use of a general adaptive mathematical model for making dynamic resilience %\zhaonote{I prefer resilience, as we actually make backup decisions that can make recovery fast.} %backup\kylenote{is backup the right word here? maybe recovery, resilience or replication?}
+decisions and evaluation of this model in a practical setting.
 The model is applicable to a broad range of applications running on clouds, clusters, and supercomputers. We also show that node failure rate is irrelevant to backup choice decision in practice.
 
 The rest of paper is organized as follows:
@@ -195,7 +195,7 @@ Table~\ref{tb:Montage} explains the application stage by stage.
 
 \begin{figure}[h]
 \begin{center}
-    \includegraphics[width=75mm]{pictures/montage}
+    \includegraphics[width=68mm]{pictures/montage}
 \caption {Montage data flow. Ovals represent tasks and boxes represent files. Solid lines show data dependencies, dashed lines show task dependencies.
     \label{fig:montage-flow}
 }
@@ -347,7 +347,7 @@ We can now estimate the expected recovery time via replication or re-execution, 
 
 \subsubsection{Expected Replication Recovery Cost}
 If a file $y$ is replicated on multiple nodes,
-then the expected replication recovery cost $E_{repl}(y)$ of file $y$ can be evaluated as the sum
+its expected replication recovery cost $E_{repl}(y)$ can be evaluated as the sum
 of the expected recovery cost in the following cases:
 
 \noindent ~~~~ The first replica is available: $(1-P)\frac{|y|}{B}$
@@ -362,7 +362,7 @@ of the expected recovery cost in the following cases:
 
 \noindent where $timeout$ is the time for the system to switch from one replica to another.
 
-We add these items and transform the equation to this form:
+We add these items and transform the equation to:
 \begin{equation}
 E_{repl}(y) = \frac{|y|}{B}\left(1-P^r\right) + \left(\frac{P-P^r}{1-P}-(r-1)P^r\right)timeout
 \end{equation}
@@ -445,16 +445,16 @@ Section~\ref{sec:Perf:Weight} quantitatively evaluates the impact of optimizatio
 %\kylenote{I'm not sure if this section adds a lot, I'm not sure if the discussion is based on what you think? or are we forward referencing results? I would vote to remove (although the picture is nice).}
 %\katznote{I think this makes sense to keep - it explores the equations we just presented.}
 We next discuss how task and system parameters impact the choice of backup method.
-The four example tasks in Figure~\ref{fig:taxonomy} vary in their computation time, I/O size, and number of input files. If we control the comparison by varying only one factor, we can observer some trends about backup decisions.
+The four example tasks in Figure~\ref{fig:taxonomy} vary in their computation time, I/O size, and number of input files. If we control the comparison by varying only one factor, we can observe some trends about backup decisions.
 An output file produced by a long-running task will tend to be backed up by replication because the cost of regenerating the file via task re-execution is likely to be large.
 %\iannote{It is unclear from the text whether the following are qualitative statements based on your intuition, or based on simulations.}
 %\iannote{Do you not assume that there is just one output file per task?} 
 %\iannote{I realize now something that is bothering me. You seem to alternate between a perspective based on files and a perspective based on tasks. I think the text will be clearer if you choose one. Let's say it is files. Then this sentence would be ``An output file produced by a longer-running task will tend to be backed up by replication." This sentence (and the other sentences in this section) would be clearer if we added some explanatory words, such as ``because the cost of regenerating the file by re-executing the task will be large."}\zhaonote{I see, fixed}
 A large output file is more likely to be backed up through re-execution, since replication may be time consuming.
 A file that depends on more input files has a higher probability to be backed up through replication, as reading many input files (required to re-execute the task) may consume a significant period time.
-
-We also observe the implication of system bandwidth for the choice of backup method.
-Higher bandwidth improves replication performance more significantly than re-execution; thus, other things being equal, the same file is more likely to be backed up through replication on a higher-bandwidth system.
+%
+System bandwidth also factors into the choice of backup method:
+higher bandwidth improves replication performance more significantly than re-execution, and thus, other things being equal, the same file is more likely to be backed up through replication on a higher-bandwidth system.
 
 \begin{figure}[ht]
 	\begin{center}
@@ -473,7 +473,7 @@ identify which parameters in the command line are input files and which are outp
 
 \begin{figure}[ht]
 	\begin{center}
-		\includegraphics[width=75mm]{pictures/datalayout}
+		\includegraphics[width=68mm]{pictures/datalayout}
 		\caption{A data layout example with three-way replication. Node 2 produces file f, and Node 0 hosts f's
 		metadata. Node 0 is chosen to host f's metadata by hashing f's file path. The actual data of f is replicated to Nodes 3 and 4, and the metadata is replicated
 		to Nodes 1 and 2.
@@ -489,7 +489,7 @@ created for both the data ({\tt data[f]}) and metadata ({\tt meta[f]}) of a file
 To access file data or metadata, a client applies a consistent hash function, with the file path and node list as input, to determine the node that hosts the file data or metadata. If access to that node fails, it can switch to the next copy until the required item is returned. (The client can infer locations of copies beyond the first based on global topology information.
 
 Recovery of a file for which no copy exists requires access to the file's lineage metadata.
-This metadata is retrieved and the computation that it describes is examined, to
+This metadata is retrieved and the computation that it describes is examined to
 determine whether the input file(s) needed to create that file are present. If they are not, the process is repeated for each input file.
 The resulting directed acyclic graph of tasks is then executed.
 
@@ -525,9 +525,9 @@ The nine stages spans a wide space of many-task applications across dimensions o
 \begin{center}
     \caption{Number of tasks, inputs, and outputs, and input and output size, for each Montage stage}
     \begin{scriptsize}
-    \begin{tabular}{ | p{1.6cm} | p{0.8cm} | p{0.8cm} | p{1.2cm} | p{1cm} | p{1.1cm} | p{1.1cm} | p{1.2cm} | p{2.7cm} |}
+    \begin{tabular}{ | p{1.6cm} | p{1cm} | p{1.1cm} | p{1.35cm} | p{1.1cm} | p{1.35cm} | p{1.3cm} | p{1.55cm} | p{3.3cm} |}
     \hline
-    Stage & \# Tasks & \# Inputs & \# Outputs & \# Inputs per Task & \# Outputs per Task & Max Input Size (MB) & Max Output Size(MB) & Input Dependency\\ \hline \hline
+    Stage & \# Tasks & \# \mbox{Inputs} & \# \mbox{Outputs} & \# \mbox{Inputs} per Task & \# \mbox{Outputs} per Task & Max \mbox{Input} Size (MB) & Max \mbox{Output} Size (MB) & Input Dependency\\ \hline \hline
 	mProject & 369 & 369 & 738 & 1 & 2 & 2.1 & 4.2 & filesystem \\ \hline
 	mImgtbl-1 & 1 & 369 & 1 & 369 & 1 & 4.2 & 0.97 & mProject\\ \hline
 	mOverlaps & 1 & 1 & 1 & 1 & 1 & 0.97 & 0.13 & mImgtbl\\ \hline
@@ -709,16 +709,16 @@ and the re-execution score and replication score have a simpler form than in Equ
 \end{itemize}
 
 We also consider a second question, namely, how does the adaptive method respond to varying numbers of input files?
-For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which are identical except for the number of input files, can the adaptive model determine that the output of {\em task 4} should be backed up through replication? (since more input files indicate a larger chance of failure)
+For example, in the case of {\em task 1} and {\em task 4} in Figure~\ref{fig:taxonomy}, which only differ in the number of input files, can the adaptive model determine that the output of {\em task 4} should be backed up through replication (since more input files indicate a larger chance of failure?)
 The answer is yes.
-Our computation of a task's time-to-solution $T$ includes three parts: input access (either local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through re-execution than that of {\em task 1}; thus, the adaptive method is more likely to replicate the data.
+Our computation of a task's time-to-solution $T$ includes three parts: input access (local or remote), computation time, and output to local RAM. If the computation and output phases take the same amount of time, more input files makes the input phase run longer, which is reflected in the measurement of $T$. The output of {\em task 4} thus has a higher recovery cost through re-execution than that of {\em task 1}; thus, the adaptive method is more likely to replicate the data.
 
 
 
 
 \section{Related Work}
 \label{sec:Related}
-Researchers have investigated the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}, all for long-running tasks.  Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time-to-solution of an application execution without any failure), and coordination overhead (e.g. minimizing the number of messages for all processes to reach a consistent checkpoint). 
+Researchers have investigated the optimum checkpointing interval~\cite{young1974first, daly2006higher}, coordinated checkpointing~\cite{chandy1985distributed}, and consistent checkpointing~\cite{elnozahy1992performance}, all for long-running tasks.  Common optimization goals in these approaches are minimizing: the time lost due to failures, failure-free running time (end-to-end time-to-solution of an application execution without any failure), and coordination overhead (e.g., minimizing the number of messages for all processes to reach a consistent checkpoint). 
 
 Fault tolerant resilience models have been explored in small-scale applications for single-threaded applications on individual PCs~\cite{condor1988, libckpt1994}, large-scale distributed workflows~\cite{uncoordinated2010}, and parallel and HPC computing applications~\cite{mist1995, consistent1994,FTworkshop2009}, among others. In  general, most resilience approaches rely on some form of data replication, either explicitly via replicating intermediate files or implicitly via checkpointing application state.
 
@@ -737,7 +737,7 @@ Optimum checkpointing interval~\cite{young1974first, daly2006higher} minimizes t
 The consistent checkpointing~\cite{elnozahy1992performance, chandy1985distributed} synchronizes the checkpointed states of each individual process.
 Checkpointing is typically used on long running tasks, while the tasks in our research are small tasks which can be seen as a natural partitioning of long running task. The long running parallel task abstraction also requires the processes to coordinate upon failure to reach consensus then all processes roll back to the coordinated checkpoint. This is not the case for small task abstraction. The whole execution is usually not halted or rolled back in a collective way, rather the execution continues when failures present, and the recovery decision is making by individual task rather than overall application.
  
-In most cases both replication and checkpointing use stable (often distributed) file system storage of replicas, since these systems are resistant to processor failure. Researchers have investigated the use of disk in RAMCloud~\cite{ramcloud2011},  diskless~\cite{diskless1998, zhen04}, and in memory replicas as a means of reducing the I/O overhead of storing replicas on disk. Others have explored the use of SSDs~\cite{diskless2010} as a compromise between in-memory and  disk-based approaches. These models use a number of techniques to avoid the bottlenecks seen with disk-based checkpointing techniques. Other optimizations including encoding techniques, such as erasure encoding~\cite{star2008, erasure2009}, have also been applied to reduce data storage requirements.
+In most cases both replication and checkpointing use stable (often distributed) file system storage for replicas, since these systems are resistant to processor failure. Researchers have investigated the use of disk in RAMCloud~\cite{ramcloud2011},  diskless~\cite{diskless1998, zhen04}, and in memory replicas as a means to reduce the I/O overhead of storing replicas on disk. Others have explored SSDs~\cite{diskless2010} as a compromise between in-memory and  disk-based approaches. These models use a number of techniques to avoid the bottlenecks seen with disk-based checkpointing techniques. Other optimizations including encoding techniques, such as erasure encoding~\cite{star2008, erasure2009}, have also been applied to reduce data storage requirements.
 
 
 While these approaches to fault tolerance have been successfully applied in a number of domains they do not provide the same level of dynamism proposed in this work. Perhaps the most similar approaches are those employed in data location aware scheduling~\cite{diana2007,peris10location}. In these systems, the goal is to balance the tradeoff between the cost of transfer and the cost of compute. In such models, sophisticated schedulers determine if data should be moved to compute or vice versa. In many ways these comparisons are similar to the dynamic resiliency algorithms applied in our work; however, the approaches differ in that here we consider the latency within networks and the cost of storage, and then compare this to the cost of computing the files themselves. Moreover, our approach attempts to quantify the cost of reexecution of compute against the cost of storage, where the cost of reexecution is accurately known. In location aware scheduling approaches the cost of transfer and execution are generally estimated with the goal of reducing the overall execution time, irrespective of failure.  
@@ -765,7 +765,7 @@ The AMPLab is supported in part by NSF CISE Expeditions Award CCF-1139158, LBNL 
 %\katznote{are all of these active supporters of work done in this paper?  If not, can we remove some of them? - not a big deal either way}
 %\zhaonote{Unfortunately, all these sponsors have to be listed in the ack. }
 
-The Berkeley Institute for Data Science (BIDS) is  supported by ... \katznote{Need to add another footnote to some of the authors to indicate those who are supported by BIDS, as I did for Zhao.} 
+The Berkeley Institute for Data Science (BIDS) is  supported by ... \katznote{todo.} 
 
 
 Work by Katz was supported by the National
