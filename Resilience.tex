@@ -20,7 +20,7 @@
 % usepackage command, below.
 
 % This version uses the latex2e styles, not the very ancient 2.09 stuff.
-\documentclass{sig-alternate}
+\documentclass{acm_proc_article-sp}
 \usepackage{pgf}
 \usepackage{listings}
 \usepackage{url}
@@ -62,27 +62,77 @@
 \title{Balancing Costs for Data Resilience}
 
 %for single author (just remove % characters)
+%\author{
+%\begin{tabular}{cccc}
+%{Zhao Zhang\textsuperscript{*,\#}} & {Daniel S. Katz\textsuperscript{+}} & {Haoyuan Li\textsuperscript{*}} & {Kyle Chard\textsuperscript{+}} 
+%\end{tabular}
+%\\
+%\begin{tabular}{ccc}
+%{Ian Foster\textsuperscript{+}} & {Michael J. Franklin\textsuperscript{*,\#}} & {Ion Stoica\textsuperscript{*}}
+%\end{tabular}
+%\and 
+%\begin{tabular}{c}
+%\textsuperscript{*}AMPLab, University of California, Berkeley \\
+%\textsuperscript{\#}Berkeley Institute for Data Science (BIDS), University of California, Berkeley \\
+%\textsuperscript{+}Computation Institute, University of Chicago \& Argonne National Laboratory
+%\end{tabular}
+%}
+\numberofauthors{6} 
 \author{
-\begin{tabular}{cccc}
-{Zhao Zhang\textsuperscript{*,\#}} & {Daniel S. Katz\textsuperscript{+}} & {Haoyuan Li\textsuperscript{*}} & {Kyle Chard\textsuperscript{+}} 
-\end{tabular}
-\\
-\begin{tabular}{ccc}
-{Ian Foster\textsuperscript{+}} & {Michael J. Franklin\textsuperscript{*,\#}} & {Ion Stoica\textsuperscript{*}}
-%Name Institution
-\end{tabular}
-\and % use '\and' if you need 'another row' of author names
-\begin{tabular}{c}
-\textsuperscript{*}AMPLab, University of California, Berkeley \\
-\textsuperscript{\#}Berkeley Institute for Data Science (BIDS), University of California, Berkeley \\
-\textsuperscript{+}Computation Institute, University of Chicago \& Argonne National Laboratory
-\end{tabular}
-} 
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor Zhao Zhang\\\
+       \affaddr{AMPLab}\\
+       \affaddr{UC Berkeley} \\
+       \email{zhangzhao@berkeley.edu}
+% 2nd. author
+\alignauthor Daniel S. Katz\\
+       \affaddr{Computation Institute}\\
+       \affaddr{University of Chicago \& Argonne National Laboratory}\\
+       \email{d.katz@ieee.org}
+% 3rd. author
+\alignauthor Haoyuan Li\\
+       \affaddr{AMPLab}\\
+       \affaddr{UC Berkeley}\\
+       \email{haoyuan@berkeley.edu}
+\and         
+% 4th. author       
+\alignauthor Kyle Chard\\\
+       \affaddr{Computation Institute}\\
+       \affaddr{University of Chicago \& Argonne National Laboratory}\\
+       \email{chard@uchicago.edu}       
+% 5th. author
+\alignauthor Ian T. Foster\\
+       \affaddr{Computation Institute}\\
+       \affaddr{University of Chicago \& Argonne National Laboratory}\\
+       \email{foster@anl.gov} 
+% 6th. author
+\alignauthor Michael J. Franklin\\
+       \affaddr{AMPLab}\\
+       \affaddr{UC Berkeley}\\
+       \email{franklin@berkeley.edu}
+\and       
+% 7th. author
+\alignauthor Ion Stoica\\
+       \affaddr{AMPLab}\\
+       \affaddr{UC Berkeley}\\
+       \email{istoica@cs.berkeley.edu}
+}
+ 
 
 \maketitle
 
 \katznote{note that authors are probably not in the correct ACM format}
-
+\zhaonote{fixed, but I really do not like this format}
 % Use the following at camera-ready time to suppress page numbers.
 % Comment it out when you first submit the paper for review.
 %\thispagestyle{empty}
@@ -113,15 +163,15 @@ We also discover that, at least for this application, backup decisions are relat
 \end{abstract}
 
 \katznote{need to set categories, terms, and keywords - all below are from the template}
-
+\zhaonote{fixed}
 % A category with the (minimum) three required fields
-\category{H.4}{Information Systems Applications}{Miscellaneous}
+%\category{H.4}{Information Systems Applications}{Miscellaneous}
 %A category including the fourth, optional field follows...
-\category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
+\category{D.4.5}{Software}{Operating Systems}[Reliability]
 
-\terms{Theory}
+\terms{Reliability}
 
-\keywords{ACM proceedings, \LaTeX, text tagging}
+\keywords{Transient in-memory file system resilience, parallel scripting, many-task applications}
 \section{Introduction}
 %\zhaonote{the overall tone of this paper is about unreliable distributed computing platforms, I will make it more supercomputer, and declare we are emulating a supercomputer with Amazon EC2.}
 %\{test}
@@ -779,7 +829,7 @@ The AMPLab is supported in part by NSF CISE Expeditions Award CCF-1139158, LBNL 
 %\katznote{are all of these active supporters of work done in this paper?  If not, can we remove some of them? - not a big deal either way}
 %\zhaonote{Unfortunately, all these sponsors have to be listed in the ack. }
 
-The Berkeley Institute for Data Science (BIDS) is  supported by ... \katznote{todo.} 
+The Berkeley Institute for Data Science (BIDS) is  supported by ... \katznote{todo.} \zhaonote{maybe we don't need this ack for BIDS since this activity was not supported by BIDS funding.}
 
 
 Work by Katz was supported by the National
