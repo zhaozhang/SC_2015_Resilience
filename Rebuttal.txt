@@ -1,0 +1,4 @@
+1) Applicability to supercomputers.
+2) What if asynchronous backup is available.
+3) application(s) were not convincing.
+4) what is the novelty?
