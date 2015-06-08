@@ -1,0 +1,118 @@
+
+Review of pap352s2 by Reviewer 1	top
+
+ Summary and High Level Discussion
+ In this work , the authors seek to build a parallel scripting framework that enables many-task applications that are resilient to node failures. More specifically, this work aims to build a runtime capable of determining, at runtime and for a specific applications properties, the whether task re-execution or file replication is the most efficient resilience method. Using the AMFORA parallel scripting framework and the image processing application Montage, the authors demonstrate that an adaptive scheme that tracks the costs of each individual resilience mechanism and choses between the two is capable of recovering 57% faster on a 64 node EC2 instance than a method that statically choses the recovery mechanisms.
+
+The authors begin by providing descriptions of both AMFORA and the Montage image processing application. They then provide a description of the model used to score each of the two resilience methods--replication and task re-execution. This model attempts to account for both the failure free backup costs and the expected recovery costs int he presence of failures. They then combine these two costs for each method to define a "score" to determine which method is chosen In addition to the costs of each method, this score also allows the user to define a preference if they would prefer file replication vs re-execution if, for example, they we running on a platform where storage volume for replicas was a limitation. Next, the authors demonstrate the failure-free backup overheads of their adaptive method in comparison to straight re-execution and replication. For this application and system configuration, re-execution is the clear winner, with there adaptive method performing similarly. They then investigate the recovery performance but simulating failures. There are two specific failure scenarios they investigate. These trigger a single stage recovery and a multistage recovery. In both of these cases, the authors demonstrate lower overheads for there adaptive method. Finally, the authors 1) show that their optimization weight is effective at honoring a user preference 2) demonstrate that failure rates have little impact on adaptive decisions, and that the dependency on the number of input files is accurately accounted for by the model.
+
+There are a number of strengths to this work:
+1) The paper uses a real many task application in its evaluation.
+2) It is investigating a problem that is likely important to small but growing number of attendees at SC.
+3) The analysis provided does adequately detail and performance of the application and the framework considered.
+
+While I do appreciate the work that went into this paper, there are also a number of weakness (more details of these can be found in the detailed comments below)
+1) Only one application (Montage) on one non-traditional HPC platform (EC2) is considered. Therefore it is difficult to extract lessons learned or insight, for example how results might apply to other scenarios (apps and platforms)
+2) Similarly, EC2 introduces significant limitations. For example, given the comparatively low network bandwidth, it is not a surprise that re-exeuction fairs so well. On a more traditional HPC platform, results might be different.
+3) Again similarly, this one effective data point raises some concern that the framework is capable of making optimal decisions.
+4) There is little novelty in the methods used for resilience. These are the mainstays of the community (re-execution and replication).
+5) Though the concepts are relatively straight-forward, I found the paper difficult to read. It seems excessively wordy which ended up causing confusion, therefore multiple readings were needed.
+
+ Comments for Rebuttal
+ When I read this paper I am left wondering what insights a reader might take away Given only one application on one non-traditional HPC platform, can you detail more clearly the important take away messages you see for this work?
+
+EC2 seems to introduce limitations on the results and impact of this work. How might you address these limitations?
+
+ Detailed Comments for Authors
+ Regarding the readability of the paper, as stated above, this paper required multiple reading passes to fully understand due to its organization. The following are suggestions that *may* improve the readability:
+ - The discussion of score in section 3.2.3 was a bit confusing and I believe I did not fully understand until I saw the equations in section 5.4. You might consider having the individual score equations for each method earlier in section 3.2.3 where introduced.
+ - It would be help if Table 2 preceded or appeared on the same page as section 3.1. At the very least please explain that the variable definitions in equations 2 and 3 appear in table 2. I did not realize and was left wondering what these variables were until I went to the next page.
+ - The related work is not well organized and seems to this reviewer like it can be condensed. For example, multiple paragraphs discuss RAMCloud and checkpointing in seemingly similar contexts.
+
+The results are limited in node count with no justification as to why these results will be applicable to larger node counts or that additional performance considerations do not enter at larger node counts. That description would be helpful.
+
+The authors provide no details on statistics of the performance runs. Is this one run? The average of many runs? Mins? Maxs? This might be especially important as EC2 is notorious for having high performance variability.
+
+I assume in the scenarios in Figure 6 and 7 that the performance breakdowns or the other steps not enumerated are similar to the performance in Figure 4. If this is true, the document should reflect that.
+
+The failure injection mechanism is very limited. I think I appreciate that it is not intended to be comprehensive as you are trying to create two specific types of recoveries, but I am left wondering the validity of results given this limited mechanism.
+
+I think you want a separate subsection for the last paragraph of section 5.4 as this section is not discussing the impact of failure rate.
+
+Review of pap352s2 by Reviewer 2       top
+
+ Summary and High Level Discussion
+ This paper presents a model and mechanism for resilience in task-based execution systems. The premise is that if the backup/recovery cost for task input data can be estimated and the task execution time is known, then scheduling decisions can be made to trade-off between roll-back/recovery at different granularities, i.e., for each task or for entire sets of tasks. Experiments are presented from an Amazon EC2 cluster run.
+
+The main strengths of this paper are the presentation of the concept and results.
+
+The main weakness of this paper is the rather simplistic trade-off model.
+
+ Comments for Rebuttal
+ What is the novelty of this approach?
+
+ Detailed Comments for Authors
+ CORRECTIONS:
+
+A few commas are missing, e.g., '... such as' => '..., such as' and there are a few grammar errors, e.g., 'of replication method' => 'of the replication method'. There are also wording issues (use of language), e.g., 'Thus, we present here' => 'Therefore, this paper presents'.
+
+Section 3., last paragraph, last sentence: 'However, we later show that the failure has little impact on the adaptive backup model in Section 5.4.' ??? What does this mean?
+
+Figure 8 is placed too far back.
+
+MAJOR ISSUES:
+
+The presented model seems rather simplistic. It considers linear backup/recovery, which excludes any type of parallel I/O and RAID-type storage. It assumes the task execution time is known. In other words, the paper contains a rather simple scheduling solution that decides if a job (task in this case) should be restarted from a checkpoint or its input data regenerated by re-executing the job(s) that created the input data.
+
+Review of pap352s2 by Reviewer 3 	     top
+
+ Summary and High Level Discussion
+ The paper addresses the question: how to optimally ensure data resilience for many-task applications running on large-scale computers. State-of-the-art techniques typically rely on data replication or on task re-execution (to produce again lost data in case of failure). Using systematically one of this techniques in every situation may lead to useless overheads. This paper proposes a model trying to compute the cost of each of these two techniques, in order to adaptively identify at run-time the best choices for a given computer system and application. This model is implemented in a parallel scripting framework (AMFORA) and evaluated with a real workflow application (Montage). The results show that the system introduces 2.9% overhead when there is no failure and that recovery can be 57% faster that non-adaptive systems.
+
+ Comments for Rebuttal
+ See detailed comments, especially for:
+ - the choice of the alpha parameter;
+ - the assumption that backup is synchronous is to strong (many systems use asynchronous backup);
+ - the applicability to HPC platforms (not being able to evaluate the contribution on an HPC system is a weakness and the difficulties encountered were not discussed).
+
+ Detailed Comments for Authors
+ The paper is clearly structured and reads well, the problem is well motivated. Before introducing their solution, the authors clearly state their assumptions and design choices (small files, single-writer-multiple-reader access model, directory metadata data fully replicated, file metadata distributed using consistent hashing). The analytical model is clear and simple. However, there are a few questions that need to be further clarified.
+
+- For the expected recovery cost in the case of replication, it is not clear what is the meaning of "switching from one replica to another": who incurs this cost, to what operations does it correspond exactly?
+
+- The authors assume that the task writes files locally, then backup is done synchronously. I'm surprised by this assumption, as asynchronous backup is used in many systems today. Taking into account asynchronous backup instead would seem realistic to me, but than optimizing that cost would no longer impact the overall makespan in a substantial way (as backup cost will be overlapped by computation cost). The impact of the contribution would then be much lower (basically, the proposed model is not applicable anymore as backup costs would be hidden).
+
+- The model relies on the alpha parameter, which the user selects manually (between 0 and 1) to choose which technique to optimize more (backup or recovery). How to choose this parameter? Who should choose it? Any hint on automatic selection of its value?
+
+- Performance evaluation: the authors motivate the usage of the cloud instead of existing HPC systems using the argument that there are technical barriers preventing such an evaluation on HPC systems: "Cray systems do not allow users to use FUSE on compute nodes, and BG/Q systems do not have a full Linux kernel".
+But then, what shall we understand? That the solution is not applicable to today's HPC systems? This would contradict the authors' claim when motivating their work in the introduction: the contribution is supposed to be applicable to supercomputers.
+
+Sec 5.2 - Recovery performance
+
+The results are presented factually, but the explanation of the results is fuzzy and not convincing.
+
+Sec 5.3
+
+The conclusion is a bit frustrating: OK, the method matches the optimization goal, but how to select the best optimization goal (i.e. the "right" value of alpha?) This is left out to the user and not discussed and, besides, it strongly depends on the assumption that backup is synchronous.
+
+Figure 8: the labels and meaning of x/y axes are missing.
+
+Review of pap352s2 by Reviewer 4    top
+
+ Summary and High Level Discussion
+ The paper describes a many task runtime – AMFORA – that integrates support for combining replication and re-execution as resilience mechanisms at a granularity of individual workflow stages. The evaluation is done for the Montage supernova application using 64 Amazon EC2 instances.
+
+strengths:
+-	the problem space addressed by the paper is important. the solution extracts benefits through its adaptive assessment of tradeoffs in different replication techniques.
+-
+
+weaknesses:
+-	many of the design decisions are motivated by what’s more traditionally considered cloud vs. HPC scenarios – e.g., use of DHTs to establish peers for the resilience mechanisms, small single-writer files/outputs from individual tasks. While these choices are reasonable for the Montage application, the paper doesn’t discuss how these translate to other types of applications. Also, since the problem is motivated by failure characteristics at exascale, there should be a discussion at least how these design decisions can be adapted at such scales.
+-	Since there is a data dependent or non-deterministic aspect to which resilience strategy will be better for a particular task (i.e., the task should complete before the system can assess the output size), that limits possibilities to overlap the replication (or output or lineage). Is this a concern?
+
+ Comments for Rebuttal
+ None
+
+ Detailed Comments for Authors
+ Use of other benchmarks, or even better -- applications, can make the benefits more convincing.
+ 
