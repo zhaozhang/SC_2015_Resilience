@@ -1,4 +1,13 @@
+We thank the reviewers for their thoughtful comments. We provide here additional information relating to the points that they made.
+
 1) Applicability to supercomputers.
+The current barrier that prevents a fuse-mounted file system running on supercomputers is both a policy issue as well as tech issue. On Cray supercomputers, the Cluster Compatibility Mode does allow users to access fuse library, however the administrative process turn the options off. The previous generation BG/P system does have fuse support from the ZeptoOS kernel, and that is where AMFORA comes from. We have demonstrated how AMFORA scales to 8K nodes. The successor of BG/P, the BG/Q system, does not have a full Linux kernel, but a collaborative team from LBNL, LLNL, Argonne, UIUC and UChicago is working on the Argo operating system (http://www.mcs.anl.gov/project/argo-exascale-operating-system) to solve this issue. We strongly believe that this is a trend of supercomputers.
+
 2) What if asynchronous backup is available.
+Asynchronous backup indeed runs faster than synchronous checkpointing, but it requires additional mechanism to guarantee the consistency and higher complexity in the context of large scale computers. And it is hard to tell when an asynchronous checkpoint is in the state that failures can recover from it.
+
 3) application(s) were not convincing.
+Answer: The Montage applications contains 10 stages, which can be viewed as 10 identical applications. It covers computation/IO ratio at a wide range. Some stages have better performance using replication for backup, while others prefer lineage. In terms of the lineage, it also covers all cases.
+
 4) what is the novelty?
+Answer: The novelty of this work is the dynamic backup decision making at runtime. Most of the existing systems use monolithic approaches throughout the computation, where monolithic lineage will make deeper stage too expensive to be recovered, while uniform replication slows down the overall application performance.
