@@ -1,17 +1,20 @@
-We thank the reviewers for their thoughtful comments. We provide here additional information relating to the points that they made.
+We thank the reviewers for their thoughtful comments. We provide here additional information relating to their comments.
 
 1) Applicability to supercomputers.
-The current barrier that prevents a fuse-mounted file system running on supercomputers is both a policy issue as well as tech issue. On Cray supercomputers, the Cluster Compatibility Mode does allow users to access fuse library, however the administrative process turn the options off. The previous generation BG/P system does have fuse support from the ZeptoOS kernel, and that is where AMFORA comes from. We have demonstrated how AMFORA scales to 8K nodes. The successor of BG/P, the BG/Q system, does not have a full Linux kernel, but a collaborative team from LBNL, LLNL, Argonne, UIUC and UChicago is working on the Argo operating system (http://www.mcs.anl.gov/project/argo-exascale-operating-system) to solve this issue. We strongly believe that this is a trend of supercomputers.
+The current barrier that prevents a fuse-mounted file system running on supercomputers is both a policy and technology issue. On Cray supercomputers, the Cluster Compatibility Mode does allow users to access fuse library, however this support is typically disabled by administrators. The previous generation BG/P system supports fuse via the ZeptoOS kernel--and this is the basis for AMFORA. In previous work we have demonstrated that AMFORA scales to 8K nodes. The successor of BG/P, the BG/Q system, does not have a full Linux kernel and therefore does not support fuse, however researchers are working on the Argo operating system (http://www.mcs.anl.gov/project/argo-exascale-operating-system) to solve this issue. We therefore strongly believe that our approach is applicable to supercomputers.
+
+[KC - should we say something here about our results being in some way representative for supercomputers?]
 
 2) What if asynchronous backup is available?
-Intuitively, asynchronous backup should run faster than synchronous back. However, according to previous work[ 1], a simple asynchronous backup can be worse than the synchronous solution. The asynchronous approach also requires additional logic to guarantee the consistency. If an failure happens during the middle of an asynchronous back, it is extremely hard to tell if the lost data can be recovered from replicas. From another point of view, our adaptive method only introduces 2.9% for the Montage application, which is acceptable. In other cases where replicating data is the backup choice, there is a relatively longer running time to produce that piece of data. The relatively longer running time will make the replication overhead less significant if not negligible. 
+Intuitively, asynchronous backup should run faster than synchronous backup. However, previous work [1] has shown that simple asynchronous backup can be worse than synchronous backup. The asynchronous approach also requires additional logic to guarantee consistency. If failure happens duringasynchronous backup, it is extremely difficult to deterimine if lost data can be recovered from replicas. From another perspective, our adaptive method only introduces 2.9% overhead
+for the Montage application. In other cases where replicating data is the backup choice, there is a relatively longer execution time to produce that data. The relatively longer running time will make the replication overhead less significant if not negligible. 
 
 
 3) Application(s) were not convincing.
-The Montage applications contains nine stages, which can be viewed as nine identical applications. Figure 5 in the paper shows that these nine stages covers all possible combination in the space of replication-reexecution decision space. We believe that using the nine stages of Montage is sufficient to demonstrate the effectiveness of our adaptive method.
+The Montage application contains nine stages, which can be viewed as nine identical [KC - do you mean independent?] applications. Figure 5 in the paper shows that these nine stages cover all possible combinations in the replication-reexecution decision space. We believe that using the nine stages of Montage demonstrates the effectiveness of our adaptive method.
 
 4) What is the novelty?
-Answer: The novelty of this work is the dynamic backup decision making at runtime. 
-Most of the existing systems use monolithic approaches throughout the stages, where monolithic lineage will make deeper stage too expensive to be recovered, while uniform replication slows down the overall application performance.
+he novelty of this work is the dynamic backup decision making at runtime. 
+Most existing systems use monolithic approaches throughout the stages, where monolithic lineage will make deeper stages too expensive to be recovered, while uniform replication slows down overall application performance.
 
-[1] Sato, Kento and others, "Design and Modeling of a Non-blocking Checkpointing System", SC'12, http://dl.acm.org/citation.cfm?id=2389022
+[1] Sato et al., "Design and Modeling of a Non-blocking Checkpointing System", SC'12, http://dl.acm.org/citation.cfm?id=2389022
